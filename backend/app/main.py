@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
-from app.database import engine, SessionLocal, Base
-from app.models import Post
-from app.schemas import PostCreate, PostRead
+from .database import engine, SessionLocal, Base
+from .models import Post
+from .schemas import PostCreate, PostRead
 
 # データベーステーブル作成
 Base.metadata.create_all(bind=engine)
