@@ -1,7 +1,6 @@
 // frontend/src/app/components/ui/Button.jsx
 
 import React from 'react';
-import './Button.css'; // スタイルシート
 
 const Button = ({ children, active, onClick }) => {
   return (

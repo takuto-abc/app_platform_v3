@@ -4,10 +4,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Dashboard from '.../ui/Dashboard';
-import EditScreen from '.../ui/EditScreen';
-import Button from '.../ui/Button';
-import useFetchPosts from '..../api/useFetchPosts'; // カスタムフックのインポート
+import Dashboard from '../../ui/Dashbord.jsx';
+import Edit from '../../ui/Edit';
+import Button from '../../ui/Button';
+import useFetchPosts from '../../../api/useFetchPosts';
+
+
+
 
 const Main = () => {
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' または 'edit'
@@ -30,7 +33,7 @@ const Main = () => {
         </Button>
       </header>
       <main className="main">
-        {currentView === 'dashboard' ? <Dashboard /> : <EditScreen />}
+        {currentView === 'dashboard' ? <Dashboard /> : <Edit />}
 
         {/* ダッシュボード画面に記事一覧を表示 */}
         {currentView === 'dashboard' && (
