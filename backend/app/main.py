@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from .database import engine, SessionLocal, Base
 from .models import Post
@@ -8,6 +9,21 @@ from .schemas import PostCreate, PostRead
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# CORS の設定
+origins = [
+    "http://localhost:3000",  # フロントエンドが動作しているURL
+    # 本番環境のフロントエンドURLを追加
+    # "https://your-production-domain.com",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,            # 許可するオリジン
+    allow_credentials=True,
+    allow_methods=["*"],              # 許可するHTTPメソッド
+    allow_headers=["*"],              # 許可するHTTPヘッダー
+)
 
 # データベースセッション取得用依存関数
 def get_db():
