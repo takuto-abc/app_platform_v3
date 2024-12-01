@@ -1,0 +1,28 @@
+/* frontend/src/app/components/ui/Main.css */
+
+.header {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #f0f0f0;
+  }
+  
+  .main {
+    padding: 2rem;
+  }
+  
+  .article {
+    background-color: #fff;
+    padding: 20px;
+    margin-bottom: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .readMore {
+    color: #2980b9;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
