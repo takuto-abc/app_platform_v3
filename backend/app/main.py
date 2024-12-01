@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from .database import engine, SessionLocal, Base
-from .models import Post
+from app.database import engine, SessionLocal, Base
+from app.models import Post
 from .schemas import PostCreate, PostRead
 
 # データベーステーブル作成
