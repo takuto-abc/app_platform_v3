@@ -4,11 +4,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Dashboard from './Dashboard';
-import EditScreen from './EditScreen';
-import Button from './Button';
-import useFetchPosts from '../api/useFetchPosts'; // カスタムフックのインポート
-import './Main.css'; // スタイルシート
+import Dashboard from '.../ui/Dashboard';
+import EditScreen from '.../ui/EditScreen';
+import Button from '.../ui/Button';
+import useFetchPosts from '..../api/useFetchPosts'; // カスタムフックのインポート
 
 const Main = () => {
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' または 'edit'
