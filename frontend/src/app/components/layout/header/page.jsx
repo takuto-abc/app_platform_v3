@@ -1,6 +1,4 @@
 // Header.jsx
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
 import { Box, Flex, Heading, HStack, Spacer, Button } from '@chakra-ui/react';

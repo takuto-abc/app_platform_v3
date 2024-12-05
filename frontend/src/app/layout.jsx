@@ -1,6 +1,7 @@
 import { Providers } from './providers';
 import Header from './components/layout/header/page'; // ヘッダーコンポーネントのインポート
 import Footer from './components/layout/footer/page'; // ヘッダーコンポーネントのインポート
+import Main from './components/layout/main/page'; // ヘッダーコンポーネントのインポート
 
 export default function RootLayout({ children }) {
   return (

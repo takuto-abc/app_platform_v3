@@ -1,111 +1,142 @@
-// frontend/src/app/mypage/page.jsx
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
-  SimpleGrid,
-  Stat,
-  StatLabel,
-  StatNumber,
   Heading,
-  Text,
-  Flex,
-  Icon,
-  Progress,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
+  FormControl,
+  FormLabel,
+  Input,
+  Textarea,
+  Button,
+  VStack,
+  Select,
+  useToast,
 } from '@chakra-ui/react';
-import { FaUser, FaChartLine, FaDollarSign } from 'react-icons/fa';
+import SearchBar from '../components/ui/SearchBar';
+import ClickOpen from '../components/ui/ClickOpen';
 
-const DashBoard = () => {
+const EditPage = () => {
+  const [currentProject, setCurrentProject] = useState(null);
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('');
+  const [content, setContent] = useState('');
+  const toast = useToast();
+
+  const handleSelectProject = (project) => {
+    setCurrentProject(project);
+    setTitle('');
+    setCategory('');
+    setContent('');
+    toast({
+      title: `${project} を選択しました。`,
+      status: 'info',
+      duration: 2000,
+      isClosable: true,
+    });
+  };
+
+  const handleUpdate = () => {
+    if (!currentProject) {
+      toast({
+        title: 'プロジェクトを選択してください。',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    toast({
+      title: '更新が完了しました。',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+
+    setTitle('');
+    setCategory('');
+    setContent('');
+  };
+
   return (
-    <Box p={4}>
-      <Heading mb={6}>ダッシュボード</Heading>
+    <Box display="flex">
+      {/* メインコンテンツ */}
+      <Box
+        ml={{ base: 0, md: '200px' }}
+        mt="64px" // ヘッダーの高さを考慮
+        p={6}
+        width="100%"
+      >
+        <VStack align="start" spacing={4}>
+          <Heading as="h1" size="xl">
+            編集ページ
+          </Heading>
 
-      {/* 統計情報のカード */}
-      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={6}>
-        <StatCard
-          title="ユーザー数"
-          stat="1,234"
-          icon={<Icon as={FaUser} w={8} h={8} />}
-        />
-        <StatCard
-          title="売上"
-          stat="$12,345"
-          icon={<Icon as={FaDollarSign} w={8} h={8} />}
-        />
-        <StatCard
-          title="トラフィック"
-          stat="45,678"
-          icon={<Icon as={FaChartLine} w={8} h={8} />}
-        />
-      </SimpleGrid>
+          {/* 検索バー */}
+          <SearchBar onSelectProject={handleSelectProject} />
 
-      {/* 進捗バー */}
-      <Box mb={6}>
-        <Heading as="h3" size="md" mb={4}>
-          目標達成率
-        </Heading>
-        <Progress colorScheme="teal" size="lg" value={70} />
-        <Text mt={2}>現在の達成率: 70%</Text>
-      </Box>
+          {/* 選択されたプロジェクトの詳細 */}
+          {currentProject && (
+            <ClickOpen
+              icon={{
+                name: currentProject,
+                imageUrl: 'https://via.placeholder.com/100',
+                url: 'https://example.com',
+              }}
+            />
+          )}
 
-      {/* データテーブル */}
-      <Box>
-        <Heading as="h3" size="md" mb={4}>
-          最近のアクティビティ
-        </Heading>
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>ユーザー名</Th>
-              <Th>アクション</Th>
-              <Th>日時</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            <Tr>
-              <Td>山田太郎</Td>
-              <Td>ログイン</Td>
-              <Td>2023-10-01 10:00</Td>
-            </Tr>
-            <Tr>
-              <Td>佐藤花子</Td>
-              <Td>購入</Td>
-              <Td>2023-10-01 09:30</Td>
-            </Tr>
-            {/* 他のデータを追加 */}
-          </Tbody>
-        </Table>
+          {/* 編集フォーム */}
+          <Box
+            p={4}
+            borderWidth="1px"
+            borderRadius="md"
+            boxShadow="sm"
+            width="100%"
+          >
+            <VStack spacing={4} align="stretch">
+              <FormControl id="title" isRequired>
+                <FormLabel>タイトル</FormLabel>
+                <Input
+                  placeholder="タイトルを入力"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl id="category" isRequired>
+                <FormLabel>カテゴリ</FormLabel>
+                <Select
+                  placeholder="カテゴリを選択"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="旅行">旅行</option>
+                  <option value="就職活動">就職活動</option>
+                  <option value="ゼミの論文作成">ゼミの論文作成</option>
+                </Select>
+              </FormControl>
+
+              <FormControl id="content" isRequired>
+                <FormLabel>コンテンツ</FormLabel>
+                <Textarea
+                  placeholder="コンテンツを入力"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={6}
+                />
+              </FormControl>
+
+              <Button colorScheme="teal" onClick={handleUpdate}>
+                更新する
+              </Button>
+            </VStack>
+          </Box>
+        </VStack>
       </Box>
     </Box>
   );
 };
 
-const StatCard = ({ title, stat, icon }) => {
-  return (
-    <Stat
-      px={4}
-      py={5}
-      bg="white"
-      shadow="md"
-      borderRadius="md"
-      borderWidth="1px"
-    >
-      <Flex justifyContent="space-between" alignItems="center">
-        <Box>
-          <StatLabel fontWeight="medium">{title}</StatLabel>
-          <StatNumber fontSize="2xl">{stat}</StatNumber>
-        </Box>
-        <Box color="teal.500">{icon}</Box>
-      </Flex>
-    </Stat>
-  );
-};
-
-export default DashBoard;
+export default EditPage;

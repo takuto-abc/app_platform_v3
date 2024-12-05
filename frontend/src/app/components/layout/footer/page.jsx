@@ -1,21 +1,13 @@
 // Footer.jsx
 import React from 'react';
+import { Box, Text } from '@chakra-ui/react';
 
 const Footer = () => {
   return (
-    <footer style={styles.footer}>
-      <p> takutosan </p>
-    </footer>
+    <Box as="footer" bg="teal.500" color="white" py={4} textAlign="center">
+      <Text>© 2024 takutosan. </Text>
+    </Box>
   );
-};
-
-const styles = {
-  footer: {
-    backgroundColor: '#34495e',
-    color: '#fff',
-    textAlign: 'center',
-    padding: '15px 0',
-  },
 };
 
 export default Footer;
