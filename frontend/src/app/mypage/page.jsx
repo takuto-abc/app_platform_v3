@@ -23,7 +23,7 @@ const DashboardPage = () => {
   };
 
   return (
-    <Flex height="100vh" bg="gray.50" overflow="hidden">
+    <Flex height="100vh" bg="gray.50" overflow="hidden" position="relative">
       {/* サイドバー */}
       <Box
         as="aside"
@@ -73,7 +73,7 @@ const DashboardPage = () => {
               ここに {selectedProject} に関連するコンテンツを表示します。
               選択されたプロジェクトに応じて内容を変更できます。
             </Text>
-          </Box>
+          </Box>     
         </VStack>
       </Box>
     </Flex>
