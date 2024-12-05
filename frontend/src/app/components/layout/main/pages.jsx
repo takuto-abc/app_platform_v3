@@ -3,56 +3,89 @@
 "use client";
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import Dashboard from '../../ui/Dashbord.jsx';
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Text,
+  Link,
+  Spinner,
+  Stack,
+} from '@chakra-ui/react';
+import NextLink from 'next/link';
+import Dashboard from '../../ui/Dashboard.jsx';
 import Edit from '../../ui/Edit';
-import Button from '../../ui/Button';
 import useFetchPosts from '../../../api/useFetchPosts';
-
-
-
 
 const Main = () => {
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' または 'edit'
   const { posts, loading, error } = useFetchPosts();
 
   return (
-    <div>
-      <header className="header">
+    <Box>
+      {/* ヘッダー */}
+      <Flex as="header" bg="teal.500" p={4} align="center">
         <Button
-          active={currentView === 'dashboard'}
+          variant={currentView === 'dashboard' ? 'solid' : 'outline'}
+          colorScheme="whiteAlpha"
           onClick={() => setCurrentView('dashboard')}
+          mr={2}
         >
           ダッシュボード
         </Button>
         <Button
-          active={currentView === 'edit'}
+          variant={currentView === 'edit' ? 'solid' : 'outline'}
+          colorScheme="whiteAlpha"
           onClick={() => setCurrentView('edit')}
         >
           編集
         </Button>
-      </header>
-      <main className="main">
+      </Flex>
+
+      {/* メインコンテンツ */}
+      <Box as="main" p={4}>
         {currentView === 'dashboard' ? <Dashboard /> : <Edit />}
 
         {/* ダッシュボード画面に記事一覧を表示 */}
         {currentView === 'dashboard' && (
-          <div>
-            {loading && <p>読み込み中...</p>}
-            {error && <p style={{ color: 'red' }}>記事の取得に失敗しました。</p>}
-            {posts.map((post) => (
-              <article key={post.id} className="article">
-                <h2>{post.title}</h2>
-                <p>{post.excerpt}</p>
-                <Link href={`/posts/${post.id}`} className="readMore">
-                  続きを読む
-                </Link>
-              </article>
-            ))}
-          </div>
+          <Box mt={4}>
+            {loading && (
+              <Flex justify="center" align="center">
+                <Spinner />
+                <Text ml={2}>読み込み中...</Text>
+              </Flex>
+            )}
+            {error && (
+              <Text color="red.500">記事の取得に失敗しました。</Text>
+            )}
+            {!loading && !error && (
+              <Stack spacing={4}>
+                {posts.map((post) => (
+                  <Box
+                    key={post.id}
+                    p={4}
+                    borderWidth="1px"
+                    borderRadius="md"
+                    boxShadow="sm"
+                  >
+                    <Heading as="h2" size="md">
+                      {post.title}
+                    </Heading>
+                    <Text mt={2}>{post.excerpt}</Text>
+                    <NextLink href={`/posts/${post.id}`} passHref>
+                      <Link color="teal.500" mt={2} display="inline-block">
+                        続きを読む
+                      </Link>
+                    </NextLink>
+                  </Box>
+                ))}
+              </Stack>
+            )}
+          </Box>
         )}
-      </main>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

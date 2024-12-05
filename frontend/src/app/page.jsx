@@ -1,7 +1,7 @@
 // src/app/page.jsx
 'use client';
-
 import React from 'react';
+import Link from 'next/link'; 
 import {
   Box,
   Button,
@@ -11,7 +11,6 @@ import {
   Text,
   Stack,
   Image,
-  Link,
 } from '@chakra-ui/react';
 
 const HomePage = () => {
@@ -33,6 +32,20 @@ const HomePage = () => {
               ここにキャッチコピーや紹介文を入れます。あなたのビジネスやサービスの魅力を伝えましょう。
             </Text>
             <Button
+              as={Link} 
+              rounded="full"
+              size="lg"
+              fontWeight="bold"
+              px={6}
+              colorScheme="teal"
+              bg="teal.400"
+              _hover={{ bg: 'teal.500' }}
+              href="/mypage"
+            >
+              マイページへ
+            </Button>
+            <Button
+              as={Link} 
               rounded="full"
               size="lg"
               fontWeight="bold"
@@ -42,16 +55,16 @@ const HomePage = () => {
               _hover={{ bg: 'teal.500' }}
               href="/dashboard"
             >
-              詳しく見る
+              誰かのテンプレートを見る
             </Button>
           </Stack>
-          <Flex flex={1} justify="center" align="center">
+          {/* <Flex flex={1} justify="center" align="center">
             <Image
               alt="Hero Image"
               objectFit="cover"
               src="https://source.unsplash.com/random/400x400"
             />
-          </Flex>
+          </Flex> */}
         </Stack>
       </Container>
     </>

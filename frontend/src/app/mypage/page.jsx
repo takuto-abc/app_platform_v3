@@ -1,4 +1,4 @@
-// frontend/src/app/dashboard/page.jsx
+// frontend/src/app/mypage/page.jsx
 'use client';
 
 import React from 'react';
@@ -22,7 +22,7 @@ import {
 } from '@chakra-ui/react';
 import { FaUser, FaChartLine, FaDollarSign } from 'react-icons/fa';
 
-const DashboardPage = () => {
+const MyPage = () => {
   return (
     <Box p={4}>
       <Heading mb={6}>ダッシュボード</Heading>
@@ -108,4 +108,4 @@ const StatCard = ({ title, stat, icon }) => {
   );
 };
 
-export default DashboardPage;
+export default MyPage;
