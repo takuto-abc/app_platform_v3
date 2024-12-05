@@ -17,26 +17,6 @@ import {
 const HomePage = () => {
   return (
     <>
-      {/* ナビゲーションバー */}
-      <Box bg="teal.500" px={4}>
-        <Flex h={16} alignItems="center" justifyContent="space-between">
-          <Box color="white" fontWeight="bold" fontSize="xl">
-            ロゴ
-          </Box>
-          <Flex alignItems="center">
-            <Link px={2} py={1} rounded="md" color="white" href="#">
-              ホーム
-            </Link>
-            <Link px={2} py={1} rounded="md" color="white" href="#">
-              サービス
-            </Link>
-            <Link px={2} py={1} rounded="md" color="white" href="#">
-              お問い合わせ
-            </Link>
-          </Flex>
-        </Flex>
-      </Box>
-
       {/* ヒーローセクション */}
       <Container maxW="container.xl" py={16}>
         <Stack
@@ -60,6 +40,7 @@ const HomePage = () => {
               colorScheme="teal"
               bg="teal.400"
               _hover={{ bg: 'teal.500' }}
+              href="/dashboard"
             >
               詳しく見る
             </Button>
@@ -73,13 +54,6 @@ const HomePage = () => {
           </Flex>
         </Stack>
       </Container>
-
-      {/* フッター */}
-      <Box bg="teal.500" color="white" py={4}>
-        <Container maxW="container.xl" textAlign="center">
-          © 2023 あなたの会社名. All rights reserved.
-        </Container>
-      </Box>
     </>
   );
 };
