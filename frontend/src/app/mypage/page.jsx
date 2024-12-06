@@ -73,8 +73,23 @@ const DashboardPage = () => {
               ここに {selectedProject} に関連するコンテンツを表示します。
               選択されたプロジェクトに応じて内容を変更できます。
             </Text>
-          </Box>     
+          </Box>
         </VStack>
+      </Box>
+
+      {/* 編集ボタン */}
+      <Box position="absolute" bottom="20px" right="20px" zIndex="10">
+        <NextLink href="/edit" passHref>
+          <Button
+            as={Link} // Chakra UI の Link コンポーネントを利用
+            colorScheme="teal"
+            size="lg"
+            borderRadius="full"
+            boxShadow="lg"
+          >
+            編集
+          </Button>
+        </NextLink>
       </Box>
     </Flex>
   );

@@ -4,5 +4,5 @@
 pip install --upgrade -r requirements.txt
 
 ModuleNotFoundError: No module named 'app'
-% cd backend 
-% uvicorn app.main:app --reload
+cd backend 
+uvicorn app.main:app --reload
