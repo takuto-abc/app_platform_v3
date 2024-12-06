@@ -12,8 +12,12 @@ import {
   VStack,
   Select,
   useToast,
+  Flex,
+  InputGroup,
+  InputLeftElement,
+  Icon,
 } from '@chakra-ui/react';
-import SearchBar from '../components/ui/SearchBar';
+import { SearchIcon } from '@chakra-ui/icons';
 import ClickOpen from '../components/ui/ClickOpen';
 
 const EditPage = () => {
@@ -68,13 +72,10 @@ const EditPage = () => {
         p={6}
         width="100%"
       >
-        <VStack align="start" spacing={4}>
+        <VStack align="start" spacing={6}>
           <Heading as="h1" size="xl">
             編集ページ
           </Heading>
-
-          {/* 検索バー */}
-          <SearchBar onSelectProject={handleSelectProject} />
 
           {/* 選択されたプロジェクトの詳細 */}
           {currentProject && (
@@ -97,7 +98,7 @@ const EditPage = () => {
           >
             <VStack spacing={4} align="stretch">
               <FormControl id="title" isRequired>
-                <FormLabel>タイトル</FormLabel>
+                <FormLabel>プロジェクト名</FormLabel>
                 <Input
                   placeholder="タイトルを入力"
                   value={title}
@@ -106,9 +107,9 @@ const EditPage = () => {
               </FormControl>
 
               <FormControl id="category" isRequired>
-                <FormLabel>カテゴリ</FormLabel>
+                <FormLabel>用途</FormLabel>
                 <Select
-                  placeholder="カテゴリを選択"
+                  placeholder="選択してください"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                 >
@@ -117,9 +118,22 @@ const EditPage = () => {
                   <option value="ゼミの論文作成">ゼミの論文作成</option>
                 </Select>
               </FormControl>
-
+              {/* 検索バー */}
+              <FormControl id="search" isRequired>
+                <FormLabel>アイコンを検索</FormLabel>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none">
+                    <SearchIcon color="gray.400" />
+                  </InputLeftElement>
+                  <Input
+                    type="text"
+                    placeholder="アプリケーション名を入力"
+                    onChange={(e) => handleSelectProject(e.target.value)}
+                  />
+                </InputGroup>
+              </FormControl>
               <FormControl id="content" isRequired>
-                <FormLabel>コンテンツ</FormLabel>
+                <FormLabel>説明</FormLabel>
                 <Textarea
                   placeholder="コンテンツを入力"
                   value={content}

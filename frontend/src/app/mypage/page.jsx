@@ -76,21 +76,19 @@ const DashboardPage = () => {
           </Box>
         </VStack>
       </Box>
-
-      {/* 編集ボタン */}
       <Box position="absolute" bottom="20px" right="20px" zIndex="10">
         <NextLink href="/edit" passHref>
           <Button
-            as={Link} // Chakra UI の Link コンポーネントを利用
             colorScheme="teal"
             size="lg"
-            borderRadius="full"
+            borderRadius="md" // 角を少し丸めた四角形に変更
             boxShadow="lg"
           >
             編集
           </Button>
         </NextLink>
       </Box>
+
     </Flex>
   );
 };
