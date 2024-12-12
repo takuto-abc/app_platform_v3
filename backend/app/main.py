@@ -63,8 +63,11 @@ def read_project(project_id: int, db: Session = Depends(get_db)):
 #     print(f"DATABASE_URL: {DATABASE_URL}")
 #     db = SessionLocal()
 #     try:
-#         projects = db.query(Project).all()
-#         print("プロジェクト一覧:", projects)
+#         raw_data = db.execute("SELECT * FROM projects").fetchall()
+#         print("デバッグ - projects テーブルの生データ:", raw_data)
 #     finally:
 #         db.close()
+
+
+
         
