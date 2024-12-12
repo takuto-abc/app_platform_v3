@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Flex,
@@ -10,17 +10,40 @@ import {
   Button,
   VStack,
   Text,
-  Link,
-} from '@chakra-ui/react';
-import NextLink from 'next/link';
+  Spinner,
+} from "@chakra-ui/react";
+import NextLink from "next/link";
+import useFetchData from "../api/useFetchPosts"; // カスタムフックをインポート
 
 const DashboardPage = () => {
-  const [selectedProject, setSelectedProject] = useState('旅行');
-  const projects = ['旅行', '就職活動', 'ゼミの論文作成'];
+  const { data: projects, loading, error } = useFetchData("projects"); // プロジェクトデータを取得
+  const [selectedProjectId, setSelectedProjectId] = useState(null); // 選択されたプロジェクトID
 
-  const handleSelectProject = (project) => {
-    setSelectedProject(project);
-  };
+  useEffect(() => {
+    // 初期選択プロジェクトを設定
+    if (projects.length > 0 && selectedProjectId === null) {
+      setSelectedProjectId(projects[0].id); // 最初のプロジェクトを選択
+    }
+  }, [projects, selectedProjectId]);
+
+  if (loading) {
+    return (
+      <Flex height="100vh" align="center" justify="center">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (error) {
+    return (
+      <Flex height="100vh" align="center" justify="center">
+        <Text color="red.500">エラーが発生しました: {error.message}</Text>
+      </Flex>
+    );
+  }
+
+  // 現在選択されているプロジェクト
+  const selectedProject = projects.find((project) => project.id === selectedProjectId);
 
   return (
     <Flex height="100vh" bg="gray.50" overflow="hidden" position="relative">
@@ -38,15 +61,15 @@ const DashboardPage = () => {
         </Heading>
         <List spacing={3}>
           {projects.map((project) => (
-            <ListItem key={project}>
+            <ListItem key={project.id}>
               <Button
-                variant={selectedProject === project ? 'solid' : 'ghost'}
+                variant={selectedProjectId === project.id ? "solid" : "ghost"}
                 width="100%"
                 justifyContent="flex-start"
-                colorScheme={selectedProject === project ? 'teal' : 'gray'}
-                onClick={() => handleSelectProject(project)}
+                colorScheme={selectedProjectId === project.id ? "teal" : "gray"}
+                onClick={() => setSelectedProjectId(project.id)}
               >
-                {project}
+                {project.name}
               </Button>
             </ListItem>
           ))}
@@ -61,34 +84,66 @@ const DashboardPage = () => {
         bg="white"
         borderLeft="1px solid #e2e8f0"
       >
-        <VStack align="start" spacing={4}>
-          <Heading as="h1" size="xl" mb={4}>
-            {selectedProject} のダッシュボード
-          </Heading>
-          <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
-            <Heading as="h2" size="md" mb={2}>
-              {selectedProject} の詳細
+        {selectedProject ? (
+          <VStack align="start" spacing={4}>
+            <Heading as="h1" size="xl" mb={4}>
+              {selectedProject.name} のダッシュボード
             </Heading>
-            <Text>
-              ここに {selectedProject} に関連するコンテンツを表示します。
-              選択されたプロジェクトに応じて内容を変更できます。
-            </Text>
-          </Box>
-        </VStack>
+            <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
+              <Heading as="h2" size="md" mb={2}>
+                {selectedProject.name} の詳細
+              </Heading>
+              <Text>{selectedProject.description}</Text>
+              {selectedProject.content?.blocks && (
+                <Box mt={4}>
+                  <Heading as="h3" size="sm" mb={2}>
+                    ブロック
+                  </Heading>
+                  <List spacing={3}>
+                    {selectedProject.content.blocks.map((block, index) => (
+                      <ListItem key={index}>
+                        <Heading as="h4" size="sm" mb={1}>
+                          {block.tag_name}
+                        </Heading>
+                        <List spacing={1} ml={4}>
+                          {block.icons.map((icon, iconIndex) => (
+                            <ListItem key={iconIndex}>
+                              <Flex align="center">
+                                <img
+                                  src={icon.image_url}
+                                  alt={icon.name}
+                                  width="24"
+                                  height="24"
+                                  style={{ marginRight: "8px" }}
+                                />
+                                <Text>{icon.name}</Text>
+                              </Flex>
+                            </ListItem>
+                          ))}
+                        </List>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              )}
+            </Box>
+          </VStack>
+        ) : (
+          <Text>プロジェクトが選択されていません。</Text>
+        )}
       </Box>
       <Box position="absolute" bottom="20px" right="20px" zIndex="10">
         <NextLink href="/edit" passHref>
           <Button
             colorScheme="teal"
             size="lg"
-            borderRadius="md" // 角を少し丸めた四角形に変更
+            borderRadius="md"
             boxShadow="lg"
           >
             編集
           </Button>
         </NextLink>
       </Box>
-
     </Flex>
   );
 };

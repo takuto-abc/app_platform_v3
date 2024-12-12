@@ -1,18 +1,28 @@
-// frontend/src/app/api/useFetchPosts.js
+import { useState, useEffect } from "react";
+import { fetchPosts, fetchProjects } from "./posts";
 
-import { useState, useEffect } from 'react';
-import { fetchPosts } from './posts';
-
-const useFetchPosts = () => {
-  const [posts, setPosts] = useState([]);
+/**
+ * データ取得用カスタムフック
+ * @param {"posts" | "projects"} type 取得するデータの種類
+ * @returns {Object} データ、ローディング状態、エラーを返却
+ */
+const useFetchData = (type) => {
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const getPosts = async () => {
+    const fetchData = async () => {
       try {
-        const data = await fetchPosts();
-        setPosts(data);
+        let response;
+        if (type === "posts") {
+          response = await fetchPosts();
+        } else if (type === "projects") {
+          response = await fetchProjects();
+        } else {
+          throw new Error("Unsupported fetch type");
+        }
+        setData(response);
       } catch (err) {
         setError(err);
       } finally {
@@ -20,10 +30,10 @@ const useFetchPosts = () => {
       }
     };
 
-    getPosts();
-  }, []);
+    fetchData();
+  }, [type]);
 
-  return { posts, loading, error };
+  return { data, loading, error };
 };
 
-export default useFetchPosts;
+export default useFetchData;
