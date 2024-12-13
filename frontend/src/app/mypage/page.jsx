@@ -11,18 +11,18 @@ import {
   VStack,
   Text,
   Spinner,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import useFetchData from "../api/useFetchPosts"; // カスタムフックをインポート
 
 const DashboardPage = () => {
-  const { data: projects, loading, error } = useFetchData("projects"); // プロジェクトデータを取得
-  const [selectedProjectId, setSelectedProjectId] = useState(null); // 選択されたプロジェクトID
+  const { data: projects, loading, error } = useFetchData("projects");
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
 
   useEffect(() => {
-    // 初期選択プロジェクトを設定
     if (projects.length > 0 && selectedProjectId === null) {
-      setSelectedProjectId(projects[0].id); // 最初のプロジェクトを選択
+      setSelectedProjectId(projects[0].id);
     }
   }, [projects, selectedProjectId]);
 
@@ -42,7 +42,6 @@ const DashboardPage = () => {
     );
   }
 
-  // 現在選択されているプロジェクト
   const selectedProject = projects.find((project) => project.id === selectedProjectId);
 
   return (
@@ -77,53 +76,45 @@ const DashboardPage = () => {
       </Box>
 
       {/* メインコンテンツ */}
-      <Box
-        as="main"
-        flex="1"
-        p={6}
-        bg="white"
-        borderLeft="1px solid #e2e8f0"
-      >
+      <Box as="main" flex="1" p={6} bg="white" borderLeft="1px solid #e2e8f0">
         {selectedProject ? (
           <VStack align="start" spacing={4}>
             <Heading as="h1" size="xl" mb={4}>
               {selectedProject.name} のダッシュボード
             </Heading>
             <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
-              <Heading as="h2" size="md" mb={2}>
-                {selectedProject.name} の詳細
-              </Heading>
-              <Text>{selectedProject.description}</Text>
+              {/* タグごとのグリッド */}
               {selectedProject.content?.blocks && (
                 <Box mt={4}>
-                  <Heading as="h3" size="sm" mb={2}>
-                    ブロック
-                  </Heading>
-                  <List spacing={3}>
-                    {selectedProject.content.blocks.map((block, index) => (
-                      <ListItem key={index}>
-                        <Heading as="h4" size="sm" mb={1}>
-                          {block.tag_name}
-                        </Heading>
-                        <List spacing={1} ml={4}>
-                          {block.icons.map((icon, iconIndex) => (
-                            <ListItem key={iconIndex}>
-                              <Flex align="center">
-                                <img
-                                  src={icon.image_url}
-                                  alt={icon.name}
-                                  width="24"
-                                  height="24"
-                                  style={{ marginRight: "8px" }}
-                                />
-                                <Text>{icon.name}</Text>
-                              </Flex>
-                            </ListItem>
-                          ))}
-                        </List>
-                      </ListItem>
-                    ))}
-                  </List>
+                  {selectedProject.content.blocks.map((block, blockIndex) => (
+                    <Box key={blockIndex} mb={6}>
+                      <Heading as="h3" size="sm" mb={4}>
+                        {block.tag_name}
+                      </Heading>
+                      <SimpleGrid columns={[1, 2, 3]} spacing={4}>
+                        {block.icons.map((icon, iconIndex) => (
+                          <Box
+                            key={iconIndex}
+                            p={4}
+                            borderWidth="1px"
+                            borderRadius="md"
+                            boxShadow="sm"
+                          >
+                            <Flex align="center">
+                              <img
+                                src={icon.image_url}
+                                alt={icon.name}
+                                width="24"
+                                height="24"
+                                style={{ marginRight: "8px" }}
+                              />
+                              <Text>{icon.name}</Text>
+                            </Flex>
+                          </Box>
+                        ))}
+                      </SimpleGrid>
+                    </Box>
+                  ))}
                 </Box>
               )}
             </Box>

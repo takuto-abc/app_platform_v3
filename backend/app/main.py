@@ -47,7 +47,6 @@ def create_post(post: PostCreate, db: Session = Depends(get_db)):
 @app.get("/projects", response_model=list[ProjectRead])
 def read_projects(db: Session = Depends(get_db)):
     projects = db.query(Project).all()
-    print("デバッグ - プロジェクト一覧:", projects)  # デバッグ用
     return projects
 
 @app.get("/projects/{project_id}", response_model=ProjectRead)
@@ -58,15 +57,6 @@ def read_project(project_id: int, db: Session = Depends(get_db)):
     return project
 
 
-# @app.on_event("startup")
-# def debug_database_connection():
-#     print(f"DATABASE_URL: {DATABASE_URL}")
-#     db = SessionLocal()
-#     try:
-#         raw_data = db.execute("SELECT * FROM projects").fetchall()
-#         print("デバッグ - projects テーブルの生データ:", raw_data)
-#     finally:
-#         db.close()
 
 
 
