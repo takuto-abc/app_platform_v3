@@ -14,17 +14,48 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { fetchBlocks, fetchIcons } from "../api/posts";
 import useFetchData from "../api/useFetchPosts"; // カスタムフックをインポート
 
 const DashboardPage = () => {
   const { data: projects, loading, error } = useFetchData("projects");
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [blocks, setBlocks] = useState([]);
+  const [loadingBlocks, setLoadingBlocks] = useState(false);
+  const [selectedIcons, setSelectedIcons] = useState([]);
 
   useEffect(() => {
     if (projects.length > 0 && selectedProjectId === null) {
       setSelectedProjectId(projects[0].id);
     }
   }, [projects, selectedProjectId]);
+
+  useEffect(() => {
+    const fetchProjectBlocks = async () => {
+      if (selectedProjectId) {
+        setLoadingBlocks(true);
+        try {
+          const blocksData = await fetchBlocks(selectedProjectId);
+          setBlocks(blocksData);
+        } catch (err) {
+          console.error("ブロックの取得に失敗しました:", err);
+        } finally {
+          setLoadingBlocks(false);
+        }
+      }
+    };
+
+    fetchProjectBlocks();
+  }, [selectedProjectId]);
+
+  const handleBlockClick = async (blockId) => {
+    try {
+      const iconsData = await fetchIcons(blockId);
+      setSelectedIcons(iconsData);
+    } catch (err) {
+      console.error("アイコンの取得に失敗しました:", err);
+    }
+  };
 
   if (loading) {
     return (
@@ -92,15 +123,18 @@ const DashboardPage = () => {
             </Heading>
             <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
               {/* タグごとのグリッド */}
-              {selectedProject.content?.blocks && (
+              {loadingBlocks ? (
+                <Spinner />
+              ) : (
                 <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-                  {selectedProject.content.blocks.map((block, blockIndex) => (
+                  {blocks.map((block) => (
                     <Box
-                      key={blockIndex}
+                      key={block.id}
                       p={4}
                       borderWidth="1px"
                       borderRadius="md"
                       boxShadow="sm"
+                      onClick={() => handleBlockClick(block.id)}
                     >
                       <Heading as="h3" size="md" mb={4}>
                         {block.tag_name}
@@ -111,9 +145,9 @@ const DashboardPage = () => {
                         gap={4}
                         justifyContent="space-around"
                       >
-                        {block.icons.map((icon, iconIndex) => (
+                        {selectedIcons.map((icon) => (
                           <Box
-                            key={iconIndex}
+                            key={icon.id}
                             p={2}
                             borderWidth="1px"
                             borderRadius="md"
