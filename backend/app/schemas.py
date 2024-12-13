@@ -15,17 +15,55 @@ class PostRead(PostBase):
     class Config:
         orm_mode = True
 
-# Project スキーマ
+# Iconスキーマ
+class IconBase(BaseModel):
+    name: str
+    image_url: str
+
+
+class IconCreate(IconBase):
+    pass
+
+
+class IconRead(IconBase):
+    id: int
+    block_id: int
+
+    class Config:
+        orm_mode = True
+
+
+# Blockスキーマ
+class BlockBase(BaseModel):
+    tag_name: str
+
+
+class BlockCreate(BlockBase):
+    pass
+
+
+class BlockRead(BlockBase):
+    id: int
+    project_id: int
+    icons: List[IconRead] = []
+
+    class Config:
+        orm_mode = True
+
+
+# Projectスキーマ
 class ProjectBase(BaseModel):
     name: str
-    description: str
-    content: Optional[Dict[str, Any]]  # JSON形式で詳細情報を管理
+    description: Optional[str] = None
+
 
 class ProjectCreate(ProjectBase):
     pass
 
+
 class ProjectRead(ProjectBase):
     id: int
+    blocks: List[BlockRead] = []
 
     class Config:
         orm_mode = True
