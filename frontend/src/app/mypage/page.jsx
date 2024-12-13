@@ -12,6 +12,7 @@ import {
   Text,
   Spinner,
   SimpleGrid,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import useFetchData from "../api/useFetchPosts"; // カスタムフックをインポート
@@ -19,6 +20,9 @@ import useFetchData from "../api/useFetchPosts"; // カスタムフックをイ�
 const DashboardPage = () => {
   const { data: projects, loading, error } = useFetchData("projects");
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+
+  // レスポンシブ対応: ブロックの列数を動的に変更
+  const gridColumns = useBreakpointValue({ base: 1, md: 2 });
 
   useEffect(() => {
     if (projects.length > 0 && selectedProjectId === null) {
@@ -82,42 +86,47 @@ const DashboardPage = () => {
             <Heading as="h1" size="xl" mb={4}>
               {selectedProject.name} のダッシュボード
             </Heading>
-            <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
+            {/* <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm"> */}
               {/* タグごとのグリッド */}
               {selectedProject.content?.blocks && (
-                <Box mt={4}>
+                <SimpleGrid columns={gridColumns} spacing={6}>
                   {selectedProject.content.blocks.map((block, blockIndex) => (
-                    <Box key={blockIndex} mb={6}>
-                      <Heading as="h3" size="sm" mb={4}>
+                    <Box
+                      key={blockIndex}
+                      p={4}
+                      borderWidth="1px"
+                      borderRadius="md"
+                      boxShadow="sm"
+                    >
+                      <Heading as="h3" size="md" mb={4}>
                         {block.tag_name}
                       </Heading>
-                      <SimpleGrid columns={[1, 2, 3]} spacing={4}>
+                      <VStack spacing={4} align="start">
                         {block.icons.map((icon, iconIndex) => (
-                          <Box
+                          <Flex
                             key={iconIndex}
-                            p={4}
+                            align="center"
+                            p={2}
                             borderWidth="1px"
                             borderRadius="md"
-                            boxShadow="sm"
+                            width="100%"
                           >
-                            <Flex align="center">
-                              <img
-                                src={icon.image_url}
-                                alt={icon.name}
-                                width="24"
-                                height="24"
-                                style={{ marginRight: "8px" }}
-                              />
-                              <Text>{icon.name}</Text>
-                            </Flex>
-                          </Box>
+                            <img
+                              src={icon.image_url}
+                              alt={icon.name}
+                              width="48"
+                              height="48"
+                              style={{ marginRight: "8px" }}
+                            />
+                            <Text>{icon.name}</Text>
+                          </Flex>
                         ))}
-                      </SimpleGrid>
+                      </VStack>
                     </Box>
                   ))}
-                </Box>
+                </SimpleGrid>
               )}
-            </Box>
+            {/* </Box> */}
           </VStack>
         ) : (
           <Text>プロジェクトが選択されていません。</Text>
