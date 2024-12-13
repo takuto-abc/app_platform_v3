@@ -12,7 +12,6 @@ import {
   Text,
   Spinner,
   SimpleGrid,
-  useBreakpointValue,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import useFetchData from "../api/useFetchPosts"; // カスタムフックをインポート
@@ -20,9 +19,6 @@ import useFetchData from "../api/useFetchPosts"; // カスタムフックをイ�
 const DashboardPage = () => {
   const { data: projects, loading, error } = useFetchData("projects");
   const [selectedProjectId, setSelectedProjectId] = useState(null);
-
-  // レスポンシブ対応: ブロックの列数を動的に変更
-  const gridColumns = useBreakpointValue({ base: 1, md: 2 });
 
   useEffect(() => {
     if (projects.length > 0 && selectedProjectId === null) {
@@ -58,6 +54,7 @@ const DashboardPage = () => {
         p={4}
         boxShadow="md"
         height="100vh"
+        overflowY="auto"
       >
         <Heading as="h3" size="md" mb={4}>
           プロジェクト
@@ -80,16 +77,23 @@ const DashboardPage = () => {
       </Box>
 
       {/* メインコンテンツ */}
-      <Box as="main" flex="1" p={6} bg="white" borderLeft="1px solid #e2e8f0">
+      <Box
+        as="main"
+        flex="1"
+        p={6}
+        bg="white"
+        borderLeft="1px solid #e2e8f0"
+        overflowY="auto"
+      >
         {selectedProject ? (
           <VStack align="start" spacing={4}>
             <Heading as="h1" size="xl" mb={4}>
               {selectedProject.name} のダッシュボード
             </Heading>
-            {/* <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm"> */}
+            <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
               {/* タグごとのグリッド */}
               {selectedProject.content?.blocks && (
-                <SimpleGrid columns={gridColumns} spacing={6}>
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
                   {selectedProject.content.blocks.map((block, blockIndex) => (
                     <Box
                       key={blockIndex}
@@ -101,32 +105,42 @@ const DashboardPage = () => {
                       <Heading as="h3" size="md" mb={4}>
                         {block.tag_name}
                       </Heading>
-                      <VStack spacing={4} align="start">
+                      <Flex
+                        direction="row"
+                        wrap="wrap"
+                        gap={4}
+                        justifyContent="space-around"
+                      >
                         {block.icons.map((icon, iconIndex) => (
-                          <Flex
+                          <Box
                             key={iconIndex}
-                            align="center"
                             p={2}
                             borderWidth="1px"
                             borderRadius="md"
-                            width="100%"
+                            boxShadow="sm"
+                            display="flex"
+                            flexDirection="column"
+                            alignItems="center"
+                            justifyContent="center"
                           >
                             <img
                               src={icon.image_url}
                               alt={icon.name}
                               width="48"
                               height="48"
-                              style={{ marginRight: "8px" }}
+                              style={{
+                                marginBottom: "8px",
+                              }}
                             />
-                            <Text>{icon.name}</Text>
-                          </Flex>
+                            <Text textAlign="center">{icon.name}</Text>
+                          </Box>
                         ))}
-                      </VStack>
+                      </Flex>
                     </Box>
                   ))}
                 </SimpleGrid>
               )}
-            {/* </Box> */}
+            </Box>
           </VStack>
         ) : (
           <Text>プロジェクトが選択されていません。</Text>
