@@ -15,7 +15,8 @@ import {
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { fetchBlocks, fetchIcons } from "../api/posts";
-import useFetchData from "../api/useFetchPosts"; // カスタムフックをインポート
+import useFetchData from "../api/useFetchPosts";
+import { CloseIcon, ChevronRightIcon } from "@chakra-ui/icons";
 
 const DashboardPage = () => {
   const { data: projects, loading, error } = useFetchData("projects");
@@ -23,6 +24,8 @@ const DashboardPage = () => {
   const [blocks, setBlocks] = useState([]);
   const [loadingBlocks, setLoadingBlocks] = useState(false);
   const [blockIconsMap, setBlockIconsMap] = useState({});
+  const [selectedIcon, setSelectedIcon] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     if (projects.length > 0 && selectedProjectId === null) {
@@ -80,31 +83,54 @@ const DashboardPage = () => {
       {/* サイドバー */}
       <Box
         as="aside"
-        width="240px"
+        transition="width 0.3s ease"
+        width={isSidebarOpen ? "240px" : "0px"}
         bg="gray.100"
-        p={4}
-        boxShadow="md"
+        p={isSidebarOpen ? 4 : 0}
+        boxShadow={isSidebarOpen ? "md" : "none"}
         height="100vh"
         overflowY="auto"
       >
-        <Heading as="h3" size="md" mb={4}>
-          プロジェクト
-        </Heading>
-        <List spacing={3}>
-          {projects.map((project) => (
-            <ListItem key={project.id}>
+        {isSidebarOpen && (
+          <>
+            {/* サイドバー内の閉じるボタン */}
+            <Flex justify="flex-end" mb={4}>
               <Button
-                variant={selectedProjectId === project.id ? "solid" : "ghost"}
-                width="100%"
-                justifyContent="flex-start"
-                colorScheme={selectedProjectId === project.id ? "teal" : "gray"}
-                onClick={() => setSelectedProjectId(project.id)}
+                variant="solid"
+                size="sm"
+                onClick={() => setIsSidebarOpen(false)}
+                bg="teal.500"
+                color="white"
+                _hover={{ bg: "teal.600" }}
+                width="32px"
+                height="32px"
+                p={0}
+                minWidth="32px"
               >
-                {project.name}
+                <CloseIcon boxSize="0.7em" />
               </Button>
-            </ListItem>
-          ))}
-        </List>
+            </Flex>
+
+            <Heading as="h3" size="md" mb={4}>
+              プロジェクト
+            </Heading>
+            <List spacing={3}>
+              {projects.map((project) => (
+                <ListItem key={project.id}>
+                  <Button
+                    variant={selectedProjectId === project.id ? "solid" : "ghost"}
+                    width="100%"
+                    justifyContent="flex-start"
+                    colorScheme={selectedProjectId === project.id ? "teal" : "gray"}
+                    onClick={() => setSelectedProjectId(project.id)}
+                  >
+                    {project.name}
+                  </Button>
+                </ListItem>
+              ))}
+            </List>
+          </>
+        )}
       </Box>
 
       {/* メインコンテンツ */}
@@ -133,14 +159,12 @@ const DashboardPage = () => {
                       borderWidth="1px"
                       borderRadius="md"
                       boxShadow="sm"
-                      // ブロック自体の大きさ固定
                       width="320px"
                       height="320px"
                       overflow="hidden"
                       display="flex"
                       flexDirection="column"
                     >
-                      {/* 見出し部分も一行に収まるようにする */}
                       <Heading
                         as="h3"
                         size="md"
@@ -151,8 +175,6 @@ const DashboardPage = () => {
                       >
                         {block.tag_name}
                       </Heading>
-
-                      {/* アイコンを2x2グリッドで配置 */}
                       <Box
                         display="grid"
                         gridTemplateColumns="repeat(2, 1fr)"
@@ -172,26 +194,37 @@ const DashboardPage = () => {
                               flexDirection="column"
                               alignItems="center"
                               justifyContent="center"
-                              // 各アイコン枠も一定のサイズを確保
                               width="100%"
                               height="100%"
                               overflow="hidden"
+                              cursor="pointer"
+                              onClick={() => setSelectedIcon(icon)}
                             >
-                              <img
-                                src={icon.image_url}
-                                alt={icon.name}
-                                style={{
-                                  marginBottom: "8px",
-                                  maxWidth: "48px",
-                                  maxHeight: "48px",
-                                }}
-                              />
+                              <Box
+                                width="48px"
+                                height="48px"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                overflow="hidden"
+                              >
+                                <img
+                                  src={icon.image_url}
+                                  alt={icon.name}
+                                  style={{
+                                    objectFit: "contain",
+                                    width: "100%",
+                                    height: "100%",
+                                  }}
+                                />
+                              </Box>
                               <Text
                                 textAlign="center"
                                 whiteSpace="nowrap"
                                 overflow="hidden"
                                 textOverflow="ellipsis"
                                 maxWidth="100%"
+                                mt={2}
                               >
                                 {icon.name}
                               </Text>
@@ -208,18 +241,102 @@ const DashboardPage = () => {
           <Text>プロジェクトが選択されていません。</Text>
         )}
       </Box>
+
+      {/* サイドバーが閉じているときのみ表示する開くボタン（左上、透過背景、太い矢印） */}
+      {!isSidebarOpen && (
+        <Box position="absolute" top="0" left="0" zIndex="10">
+          <Button
+            variant="ghost"
+            onClick={() => setIsSidebarOpen(true)}
+            bg="transparent"
+            color="black"
+            borderRadius="0"
+            _hover={{ bg: "gray.200" }}
+            width="32px"
+            height="32px"
+            p={0}
+            minWidth="32px"
+            fontSize="2xl"      // アイコンを大きく
+            fontWeight="bold"   // 太く
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <ChevronRightIcon boxSize="1em" />
+          </Button>
+        </Box>
+      )}
+
+      {/* 編集ボタン */}
       <Box position="absolute" bottom="20px" right="20px" zIndex="10">
         <NextLink href="/edit" passHref>
-          <Button
-            colorScheme="teal"
-            size="lg"
-            borderRadius="md"
-            boxShadow="lg"
-          >
+          <Button colorScheme="teal" size="lg" borderRadius="md" boxShadow="lg">
             編集
           </Button>
         </NextLink>
       </Box>
+
+      {/* 右サイドバー（詳細） */}
+      {selectedIcon && (
+        <Box
+          position="absolute"
+          top="0"
+          right="0"
+          width="300px"
+          height="100vh"
+          bg="white"
+          borderLeft="1px solid #e2e8f0"
+          boxShadow="lg"
+          p={4}
+          zIndex="20"
+          display="flex"
+          flexDirection="column"
+        >
+          {/* 閉じるボタン */}
+          <Flex justify="flex-end" mb={4}>
+            <Button
+              variant="solid"
+              size="sm"
+              onClick={() => setSelectedIcon(null)}
+              bg="teal.500"
+              color="white"
+              _hover={{ bg: "teal.600" }}
+              width="32px"
+              height="32px"
+              p={0}
+              minWidth="32px"
+            >
+              <CloseIcon boxSize="0.7em" />
+            </Button>
+          </Flex>
+          {/* アイコン詳細 */}
+          <Box display="flex" flexDirection="column" alignItems="center">
+            <Box
+              width="96px"
+              height="96px"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              overflow="hidden"
+              mb={2}
+            >
+              <img
+                src={selectedIcon.image_url}
+                alt={selectedIcon.name}
+                style={{
+                  objectFit: "contain",
+                  width: "100%",
+                  height: "100%",
+                }}
+              />
+            </Box>
+            <Text fontSize="lg" fontWeight="bold" mb={2}>
+              {selectedIcon.name}
+            </Text>
+            <Text>アイコンID: {selectedIcon.id}</Text>
+          </Box>
+        </Box>
+      )}
     </Flex>
   );
 };
