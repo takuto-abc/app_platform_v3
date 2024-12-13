@@ -22,7 +22,7 @@ const DashboardPage = () => {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [blocks, setBlocks] = useState([]);
   const [loadingBlocks, setLoadingBlocks] = useState(false);
-  const [selectedIcons, setSelectedIcons] = useState([]);
+  const [blockIconsMap, setBlockIconsMap] = useState({});
 
   useEffect(() => {
     if (projects.length > 0 && selectedProjectId === null) {
@@ -31,31 +31,31 @@ const DashboardPage = () => {
   }, [projects, selectedProjectId]);
 
   useEffect(() => {
-    const fetchProjectBlocks = async () => {
-      if (selectedProjectId) {
-        setLoadingBlocks(true);
-        try {
-          const blocksData = await fetchBlocks(selectedProjectId);
-          setBlocks(blocksData);
-        } catch (err) {
-          console.error("ブロックの取得に失敗しました:", err);
-        } finally {
-          setLoadingBlocks(false);
-        }
+    const fetchProjectData = async () => {
+      if (!selectedProjectId) return;
+      setLoadingBlocks(true);
+      try {
+        const blocksData = await fetchBlocks(selectedProjectId);
+        setBlocks(blocksData);
+
+        const iconsDataPromises = blocksData.map((block) =>
+          fetchIcons(block.id).then((icons) => ({ blockId: block.id, icons }))
+        );
+        const iconsDataResults = await Promise.all(iconsDataPromises);
+
+        const newBlockIconsMap = {};
+        iconsDataResults.forEach(({ blockId, icons }) => {
+          newBlockIconsMap[blockId] = icons;
+        });
+        setBlockIconsMap(newBlockIconsMap);
+      } catch (err) {
+        console.error("データの取得に失敗しました:", err);
+      } finally {
+        setLoadingBlocks(false);
       }
     };
-
-    fetchProjectBlocks();
+    fetchProjectData();
   }, [selectedProjectId]);
-
-  const handleBlockClick = async (blockId) => {
-    try {
-      const iconsData = await fetchIcons(blockId);
-      setSelectedIcons(iconsData);
-    } catch (err) {
-      console.error("アイコンの取得に失敗しました:", err);
-    }
-  };
 
   if (loading) {
     return (
@@ -122,7 +122,6 @@ const DashboardPage = () => {
               {selectedProject.name} のダッシュボード
             </Heading>
             <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
-              {/* タグごとのグリッド */}
               {loadingBlocks ? (
                 <Spinner />
               ) : (
@@ -134,42 +133,71 @@ const DashboardPage = () => {
                       borderWidth="1px"
                       borderRadius="md"
                       boxShadow="sm"
-                      onClick={() => handleBlockClick(block.id)}
+                      // ブロック自体の大きさ固定
+                      width="320px"
+                      height="320px"
+                      overflow="hidden"
+                      display="flex"
+                      flexDirection="column"
                     >
-                      <Heading as="h3" size="md" mb={4}>
+                      {/* 見出し部分も一行に収まるようにする */}
+                      <Heading
+                        as="h3"
+                        size="md"
+                        mb={4}
+                        whiteSpace="nowrap"
+                        overflow="hidden"
+                        textOverflow="ellipsis"
+                      >
                         {block.tag_name}
                       </Heading>
-                      <Flex
-                        direction="row"
-                        wrap="wrap"
-                        gap={4}
-                        justifyContent="space-around"
+
+                      {/* アイコンを2x2グリッドで配置 */}
+                      <Box
+                        display="grid"
+                        gridTemplateColumns="repeat(2, 1fr)"
+                        gridTemplateRows="repeat(2, 1fr)"
+                        gap={2}
+                        flex="1"
                       >
-                        {selectedIcons.map((icon) => (
-                          <Box
-                            key={icon.id}
-                            p={2}
-                            borderWidth="1px"
-                            borderRadius="md"
-                            boxShadow="sm"
-                            display="flex"
-                            flexDirection="column"
-                            alignItems="center"
-                            justifyContent="center"
-                          >
-                            <img
-                              src={icon.image_url}
-                              alt={icon.name}
-                              width="48"
-                              height="48"
-                              style={{
-                                marginBottom: "8px",
-                              }}
-                            />
-                            <Text textAlign="center">{icon.name}</Text>
-                          </Box>
-                        ))}
-                      </Flex>
+                        {blockIconsMap[block.id] &&
+                          blockIconsMap[block.id].slice(0, 4).map((icon) => (
+                            <Box
+                              key={icon.id}
+                              p={2}
+                              borderWidth="1px"
+                              borderRadius="md"
+                              boxShadow="sm"
+                              display="flex"
+                              flexDirection="column"
+                              alignItems="center"
+                              justifyContent="center"
+                              // 各アイコン枠も一定のサイズを確保
+                              width="100%"
+                              height="100%"
+                              overflow="hidden"
+                            >
+                              <img
+                                src={icon.image_url}
+                                alt={icon.name}
+                                style={{
+                                  marginBottom: "8px",
+                                  maxWidth: "48px",
+                                  maxHeight: "48px",
+                                }}
+                              />
+                              <Text
+                                textAlign="center"
+                                whiteSpace="nowrap"
+                                overflow="hidden"
+                                textOverflow="ellipsis"
+                                maxWidth="100%"
+                              >
+                                {icon.name}
+                              </Text>
+                            </Box>
+                          ))}
+                      </Box>
                     </Box>
                   ))}
                 </SimpleGrid>
