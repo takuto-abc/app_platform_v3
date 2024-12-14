@@ -15,6 +15,7 @@ import {
   List,
   ListItem,
   SimpleGrid,
+  Link,
 } from "@chakra-ui/react";
 import {
   fetchProjects,
@@ -41,6 +42,9 @@ const EditPage = () => {
   const [newIconName, setNewIconName] = useState("");
   const [newIconUrl, setNewIconUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isAddingNewProject, setIsAddingNewProject] = useState(false); // フォームの開閉管理
+
+
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -182,6 +186,70 @@ const EditPage = () => {
               </ListItem>
             ))}
           </List>
+          <Box width="100%" mt={6}>
+            {/* 新規プロジェクト作成ボタン */}
+            <Button
+              colorScheme="teal"
+              _hover={{ textDecoration: "none" }} // ホバー時の下線を削除
+              onClick={() => setIsAddingNewProject((prev) => !prev)} // フォームの表示/非表示を切り替え
+            >
+              {isAddingNewProject ? "閉じる" : "新規作成"}
+            </Button>
+
+            {/* 新規プロジェクト作成フォーム */}
+            {isAddingNewProject && (
+              <Box
+                p={4}
+                borderWidth="1px"
+                borderRadius="md"
+                boxShadow="sm"
+                bg="white"
+                width="100%"
+                mt={4}
+              >
+                <Heading as="h3" size="md" mb={4}>
+                  新規プロジェクト作成
+                </Heading>
+                <FormControl mb={4}>
+                  <FormLabel>プロジェクト名</FormLabel>
+                  <Input
+                    placeholder="プロジェクト名を入力"
+                    value={newProjectName}
+                    onChange={(e) => setNewProjectName(e.target.value)}
+                  />
+                </FormControl>
+                {/* タグ名フォーム */}
+                <FormControl mb={4}>
+                  <FormLabel>タグ名</FormLabel>
+                  <Input
+                    placeholder="タグ名を入力"
+                    value={newBlockName}
+                    onChange={(e) => setNewBlockName(e.target.value)}
+                  />
+                </FormControl>
+                {/* アイコン名フォーム */}
+                <FormControl mb={4}>
+                  <FormLabel>アイコン名</FormLabel>
+                  <Input
+                    placeholder="アイコン名を入力"
+                    value={newIconName}
+                    onChange={(e) => setNewIconName(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl mb={4}>
+                  <FormLabel>説明</FormLabel>
+                  <Input
+                    placeholder="説明を入力"
+                    value={newProjectDescription}
+                    onChange={(e) => setNewProjectDescription(e.target.value)}
+                  />
+                </FormControl>
+                <Button colorScheme="teal" onClick={handleCreateProject}>
+                  作成する
+                </Button>
+              </Box>
+            )}
+          </Box>
         </Box>
 
 
