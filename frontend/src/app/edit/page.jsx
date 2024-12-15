@@ -16,6 +16,14 @@ import {
   ListItem,
   SimpleGrid,
   Link,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  ModalFooter,
 } from "@chakra-ui/react";
 import {
   fetchProjects,
@@ -43,7 +51,8 @@ const EditPage = () => {
   const [newIconUrl, setNewIconUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [isAddingNewProject, setIsAddingNewProject] = useState(false); // フォームの開閉管理
-
+  const [selectedIcon, setSelectedIcon] = useState(null); // 選択されたアイコン
+  const { isOpen, onOpen, onClose } = useDisclosure(); // モーダルの開閉状態
 
 
   useEffect(() => {
@@ -151,6 +160,12 @@ const EditPage = () => {
     }
   };
 
+  const handleIconClick = (icon) => {
+    setSelectedIcon(icon); // 選択されたアイコンを設定
+    onOpen(); // モーダルを開く
+  };
+  
+  
   if (loading) {
     return (
       <Flex height="100vh" align="center" justify="center">
@@ -273,48 +288,45 @@ const EditPage = () => {
                 onChange={(e) => setEditingProjectDescription(e.target.value)}
               />
             </FormControl>
-            {/* <Button colorScheme="teal" mt={4} onClick={handleUpdateProject}>
-              プロジェクトを更新
-            </Button> */}
-
             {/* タグとアイコン編集 */}
             <Heading as="h3" size="md" mt={8} mb={4}>
               ブロック編集
             </Heading>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-              {blocks.map((block) => (
-                <Box key={block.id} p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
-                  <Heading as="h4" size="sm" mb={4}>
-                    {block.tag_name}
-                  </Heading>
-                  <SimpleGrid columns={2} spacing={2}>
-                    {blockIconsMap[block.id]?.map((icon) => (
-                        <Box
-                          key={icon.id}
-                          p={2}
-                          borderWidth="1px"
-                          borderRadius="md"
-                          boxShadow="sm"
-                          display="flex"
-                          flexDirection="column"
-                          alignItems="center"
-                          justifyContent="center"
-                          width="100%"
-                          height="100%"
-                          overflow="hidden"
-                          cursor="pointer"
-                        >                        
-                        <Text mb={1}>{icon.name}</Text>
-                        {/* アイコン画像 */}
-                        <Box
-                          mb={1}
-                          width="48px"
-                          height="48px"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                          overflow="hidden"
-                        >
+            {blocks.map((block) => (
+              <Box key={block.id} p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
+                <Heading as="h4" size="sm" mb={4}>
+                  {block.tag_name}
+                </Heading>
+                <SimpleGrid columns={2} spacing={2}>
+                  {blockIconsMap[block.id]?.map((icon) => (
+                    <Box
+                      key={icon.id}
+                      p={2}
+                      borderWidth="1px"
+                      borderRadius="md"
+                      boxShadow="sm"
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                      width="100%"
+                      height="100%"
+                      overflow="hidden"
+                      cursor="pointer"
+                      onClick={() => handleIconClick(icon)} // クリック時にアイコン選択関数を実行
+                    >
+                      <Text mb={1}>{icon.name}</Text>
+                      {/* アイコン画像 */}
+                      <Box
+                        mb={1}
+                        width="48px"
+                        height="48px"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        overflow="hidden"
+                      >
                         <img
                           src={icon.image_url}
                           alt={icon.name}
@@ -324,28 +336,30 @@ const EditPage = () => {
                             height: "100%",
                           }}
                         />
-                        </Box>
-                      </Box>
-                    ))}
-                  </SimpleGrid>
-                  <FormControl mt={4}>
-                    <FormLabel>アイコンの追加</FormLabel>
-                    <Input
-                      placeholder="例）ウェルスナビ"
-                      value={newIconName}
-                      onChange={(e) => setNewIconName(e.target.value)}
-                    />
-                    <Button
-                      colorScheme="teal"
-                      mt={2}
-                      onClick={() => handleCreateIcon(block.id)}
-                    >
-                      アイコンを追加
-                    </Button>
-                  </FormControl>
-                </Box>
-              ))}
-            </SimpleGrid>
+                      </Box>                  
+                    </Box>
+                  ))}
+                </SimpleGrid>
+
+                <FormControl mt={4}>
+                  <FormLabel>アイコンの追加</FormLabel>
+                  <Input
+                    placeholder="例）ウェルスナビ"
+                    value={newIconName}
+                    onChange={(e) => setNewIconName(e.target.value)}
+                  />
+                  <Button
+                    colorScheme="teal"
+                    mt={2}
+                    onClick={() => handleCreateIcon(block.id)}
+                  >
+                    アイコンを追加
+                  </Button>
+                </FormControl>
+              </Box>
+            ))}
+          </SimpleGrid>
+
             <FormControl mt={4}>
                   <Heading as="h4" size="sm" mb={4}>
                     ブロックの追加
@@ -375,6 +389,27 @@ const EditPage = () => {
           </Button>
         </Flex>
      )}
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent mt="100px">
+          <ModalHeader>アイコン削除確認</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>{selectedIcon?.name} を削除しますか？</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="red" mr={3} onClick={() => handleDeleteIcon(selectedIcon?.id)}>
+              削除
+            </Button>
+            <Button variant="ghost" onClick={onClose}>キャンセル</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+
+
+
     </Flex>
   );
 };
