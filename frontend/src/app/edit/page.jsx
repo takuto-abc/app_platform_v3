@@ -193,7 +193,7 @@ const EditPage = () => {
               _hover={{ textDecoration: "none" }} // ホバー時の下線を削除
               onClick={() => setIsAddingNewProject((prev) => !prev)} // フォームの表示/非表示を切り替え
             >
-              {isAddingNewProject ? "閉じる" : "新規作成"}
+              {isAddingNewProject ? "閉じる" : "新規プロジェクト作成"}
             </Button>
 
             {/* 新規プロジェクト作成フォーム */}
@@ -273,13 +273,13 @@ const EditPage = () => {
                 onChange={(e) => setEditingProjectDescription(e.target.value)}
               />
             </FormControl>
-            <Button colorScheme="teal" mt={4} onClick={handleUpdateProject}>
+            {/* <Button colorScheme="teal" mt={4} onClick={handleUpdateProject}>
               プロジェクトを更新
-            </Button>
+            </Button> */}
 
             {/* タグとアイコン編集 */}
             <Heading as="h3" size="md" mt={8} mb={4}>
-              タグとアイコン
+              ブロック編集
             </Heading>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
               {blocks.map((block) => (
@@ -301,18 +301,18 @@ const EditPage = () => {
                     ))}
                   </SimpleGrid>
                   <FormControl mt={4}>
-                    <FormLabel>新規アイコン</FormLabel>
+                    <FormLabel>アイコンの追加</FormLabel>
                     <Input
-                      placeholder="アイコン名"
+                      placeholder="例）ウェルスナビ"
                       value={newIconName}
                       onChange={(e) => setNewIconName(e.target.value)}
                     />
-                    <Input
-                      placeholder="アイコンURL"
+                    {/* <Input
+                      placeholder="アイコンをアップロード"
                       mt={2}
                       value={newIconUrl}
                       onChange={(e) => setNewIconUrl(e.target.value)}
-                    />
+                    /> */}
                     <Button
                       colorScheme="teal"
                       mt={2}
@@ -325,9 +325,10 @@ const EditPage = () => {
               ))}
             </SimpleGrid>
             <FormControl mt={4}>
-              <FormLabel>新規タグ</FormLabel>
-              <Input
-                placeholder="タグ名"
+                  <Heading as="h4" size="sm" mb={4}>
+                    ブロックの追加
+                  </Heading>              <Input
+                placeholder="例）進捗管理"
                 value={newBlockName}
                 onChange={(e) => setNewBlockName(e.target.value)}
               />
@@ -338,6 +339,20 @@ const EditPage = () => {
           </Box>
         )}
       </VStack>
+      {selectedProject && (
+        <Flex justifyContent="center" alignItems="center" mt={5}>
+          <Button
+            colorScheme="blue"
+            size="lg"
+            height="20px" 
+            width="60%"
+            py={6} 
+            onClick={handleUpdateProject} // 必要に応じて適切な関数を呼び出す
+          >
+            更新
+          </Button>
+        </Flex>
+     )}
     </Flex>
   );
 };

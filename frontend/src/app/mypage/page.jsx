@@ -256,8 +256,8 @@ const DashboardPage = () => {
             height="32px"
             p={0}
             minWidth="32px"
-            fontSize="2xl"      // アイコンを大きく
-            fontWeight="bold"   // 太く
+            fontSize="3xl"      // アイコンを大きく
+            fontWeight="extrabold"   // 太く
             display="flex"
             alignItems="center"
             justifyContent="center"
