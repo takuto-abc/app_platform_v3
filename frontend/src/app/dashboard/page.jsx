@@ -16,36 +16,39 @@ import {
   Input,
   InputLeftElement,
   Spacer,
+  Tag,
+  TagLabel, 
+  TagLeftIcon,
 } from '@chakra-ui/react';
-import { FaHeart, FaBookmark, FaSearch } from 'react-icons/fa';
+import { FaHeart, FaBookmark, FaSearch, FaHashtag } from 'react-icons/fa';
 
 const NoteLikePage = () => {
   const [posts] = useState([
     {
       id: 1,
-      title: 'はじめてのビジネスクラスで行くアイスランド旅行',
-      content: 'アイスランドの魅力をたっぷり紹介します。',
+      title: '大阪→関東に3泊4日で旅行に行った時に使ったサービス',
+      content: '#旅行 #交通手段 #計画立て #予約管理 #お店探し',
       likes: 118,
       image: 'https://via.placeholder.com/300',
     },
     {
       id: 2,
-      title: 'わたしが新卒で田舎村に移住した理由',
-      content: '地方での新しい生活に挑戦した話。',
+      title: 'エンジニア就活で使ったサービス',
+      content: '#就活 #エンジニア #進捗管理 #スケジュール管理 #就活エージェント',
       likes: 72,
       image: 'https://via.placeholder.com/300',
     },
     {
       id: 3,
-      title: 'ガンダムの新作発表と期待感',
-      content: 'ガンダムファン必見のイベントレポート。',
+      title: '投資を始めるときに使ったサービス',
+      content: '#投資 #ポートフォリオ選択 #株価 #口座開設 #投資計画',
       likes: 36,
       image: 'https://via.placeholder.com/300',
     },
     {
       id: 4,
-      title: 'お菓子デッキポイント３つ',
-      content: 'ユニークなお菓子を紹介。',
+      title: '引越しをするまでに使ったサービス',
+      content: '#引越し #書類管理 #物件探し #費用見積もり',
       likes: 60,
       image: 'https://via.placeholder.com/300',
     },
@@ -63,17 +66,17 @@ const NoteLikePage = () => {
       >
         <VStack align="start" spacing={4}>
           <Heading size="md">すべて</Heading>
-          <Heading size="sm" pt={2}>投稿企画</Heading>
+          <Heading size="sm" pt={2}>プロジェクト</Heading>
           <Heading size="sm" pt={2}>カテゴリ</Heading>
           <VStack align="start" spacing={2} pl={2}>
             <Button variant="ghost" colorScheme="teal" size="sm">
-              家庭
+              旅行
             </Button>
             <Button variant="ghost" colorScheme="teal" size="sm">
               ライフスタイル
             </Button>
             <Button variant="ghost" colorScheme="teal" size="sm">
-              食べ物
+              就職活動
             </Button>
           </VStack>
         </VStack>
@@ -124,10 +127,28 @@ const NoteLikePage = () => {
                 <Heading size="sm" noOfLines={1} mb={2}>
                   {post.title}
                 </Heading>
+
                 <Text fontSize="sm" color="gray.400" noOfLines={2}>
-                  {post.content}
+                  {post.content
+                    .split(' ')               
+                    .filter(word => word.startsWith('#')) 
+                    .map((tag, index) => (
+                      <Tag
+                        key={index}
+                        size="sm"
+                        variant="ghost"
+                        colorScheme="teal"                        borderRadius="md"
+                        mr={1}
+                        mb={1}
+                      >
+                        <TagLeftIcon as={FaHashtag} />
+                        <TagLabel>{tag.replace('#', '')}</TagLabel>
+                      </Tag>
+                    ))
+                  }
                 </Text>
-                <HStack mt={4} spacing={4}>
+
+                <HStack mt={4} spacing={1}>
                   <IconButton
                     aria-label="いいね"
                     icon={<FaHeart />}
