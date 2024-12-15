@@ -289,14 +289,42 @@ const EditPage = () => {
                   </Heading>
                   <SimpleGrid columns={2} spacing={2}>
                     {blockIconsMap[block.id]?.map((icon) => (
-                      <Box key={icon.id}>
-                        <Text>{icon.name}</Text>
-                        <Input
-                          value={icon.image_url}
-                          onChange={(e) =>
-                            handleUpdateIcon({ ...icon, image_url: e.target.value })
-                          }
+                        <Box
+                          key={icon.id}
+                          p={2}
+                          borderWidth="1px"
+                          borderRadius="md"
+                          boxShadow="sm"
+                          display="flex"
+                          flexDirection="column"
+                          alignItems="center"
+                          justifyContent="center"
+                          width="100%"
+                          height="100%"
+                          overflow="hidden"
+                          cursor="pointer"
+                        >                        
+                        <Text mb={1}>{icon.name}</Text>
+                        {/* アイコン画像 */}
+                        <Box
+                          mb={1}
+                          width="48px"
+                          height="48px"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          overflow="hidden"
+                        >
+                        <img
+                          src={icon.image_url}
+                          alt={icon.name}
+                          style={{
+                            objectFit: "contain",
+                            width: "100%",
+                            height: "100%",
+                          }}
                         />
+                        </Box>
                       </Box>
                     ))}
                   </SimpleGrid>
@@ -307,12 +335,6 @@ const EditPage = () => {
                       value={newIconName}
                       onChange={(e) => setNewIconName(e.target.value)}
                     />
-                    {/* <Input
-                      placeholder="アイコンをアップロード"
-                      mt={2}
-                      value={newIconUrl}
-                      onChange={(e) => setNewIconUrl(e.target.value)}
-                    /> */}
                     <Button
                       colorScheme="teal"
                       mt={2}
