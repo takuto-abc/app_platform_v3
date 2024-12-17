@@ -98,3 +98,56 @@ export const createIcon = async (blockId, icon) => {
     throw error;
   }
 };
+
+export const deleteIcon = async (blockId, iconId) => {
+  try {
+    const response = await axios.delete(
+      `${API_BASE_URL}/blocks/${blockId}/icons/${iconId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`アイコン ${iconId} の削除に失敗しました:`, error.response?.data || error.message);
+    throw error;
+  }
+};
+
+
+/**
+ * プロジェクトを更新する関数
+ * @param {number} projectId - プロジェクトID
+ * @param {Object} projectData - 更新するプロジェクトのデータ
+ * @returns {Promise<Object>} - 更新されたプロジェクトデータ
+ */
+export const updateProject = async (projectId, projectData) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/projects/${projectId}`,
+      projectData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`プロジェクト ${projectId} の更新に失敗しました:`, error);
+    throw error;
+  }
+};
+
+
+/**
+ * アイコンが存在するか確認する関数
+ * @param {string} iconName アイコン名
+ * @returns {Promise<Object>} アイコンデータ or エラーメッセージ
+ */
+export const validateIcon = async (iconName) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/icons/validate`, {
+      params: { name: iconName },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`アイコン ${iconName} の確認に失敗しました:`, error);
+    throw error;
+  }
+};

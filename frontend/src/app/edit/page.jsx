@@ -35,6 +35,8 @@ import {
   updateIcon,
   updateProject,
   createProject,
+  deleteIcon,
+  validateIcon,
 } from "../api/posts";
 
 const EditPage = () => {
@@ -53,7 +55,10 @@ const EditPage = () => {
   const [isAddingNewProject, setIsAddingNewProject] = useState(false); // フォームの開閉管理
   const [selectedIcon, setSelectedIcon] = useState(null); // 選択されたアイコン
   const { isOpen, onOpen, onClose } = useDisclosure(); // モーダルの開閉状態
+  const [deletedIconIds, setDeletedIconIds] = useState([]);
 
+
+  // データフェッチ
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -98,67 +103,139 @@ const EditPage = () => {
     fetchProjectDetails();
   }, [selectedProject]);
 
-  const handleCreateProject = async () => {
-    if (!newProjectName || !newProjectDescription) return;
-    try {
-      const newProject = await createProject({
-        name: newProjectName,
-        description: newProjectDescription,
-      });
-      setProjects((prev) => [...prev, newProject]);
-      setNewProjectName("");
-      setNewProjectDescription("");
-    } catch (error) {
-      console.error("新規プロジェクトの作成に失敗しました:", error);
-    }
-  };
 
-  const handleUpdateProject = async () => {
-    if (!selectedProject) return;
-    try {
-      const updatedProject = await updateProject(selectedProject.id, {
-        name: editingProjectName,
-        description: editingProjectDescription,
-      });
-      setProjects((prev) =>
-        prev.map((project) =>
-          project.id === updatedProject.id ? updatedProject : project
-        )
-      );
-      setSelectedProject(updatedProject);
-    } catch (error) {
-      console.error("プロジェクトの更新に失敗しました:", error);
-    }
-  };
+ // CRUD
 
-  const handleCreateBlock = async () => {
-    if (!newBlockName || !selectedProject) return;
-    try {
-      const newBlock = await createBlock(selectedProject.id, { tag_name: newBlockName });
-      setBlocks((prev) => [...prev, newBlock]);
-      setNewBlockName("");
-    } catch (error) {
-      console.error("ブロックの作成に失敗しました:", error);
+ const handleUpdateProject = async () => {
+  if (!selectedProject) {
+    console.error("Error: No project selected.");
+    return;
+  }
+
+  // 確認ダイアログを表示
+  const isConfirmed = window.confirm("更新します、よろしいですか？");
+  if (!isConfirmed) {
+    console.log("更新がキャンセルされました。");
+    return;
+  }
+
+  try {
+    // 1. プロジェクト情報を更新
+    console.log("Updating project with ID:", selectedProject.id);
+    const updatedProject = await updateProject(selectedProject.id, {
+      name: editingProjectName,
+      description: editingProjectDescription,
+    });
+    console.log("Project updated successfully:", updatedProject);
+
+    // 2. 削除対象のアイコンを一括削除
+    if (deletedIconIds.length > 0) {
+      console.log("Deleting icons:", deletedIconIds);
+      for (const { iconId, blockId } of deletedIconIds) {
+        try {
+          await deleteIcon(blockId, iconId);
+          console.log(`アイコン削除成功: blockId=${blockId}, iconId=${iconId}`);
+        } catch (deleteError) {
+          console.error(
+            `Failed to delete icon (blockId=${blockId}, iconId=${iconId}):`,
+            deleteError.response?.data || deleteError.message
+          );
+        }
+      }
+    } else {
+      console.log("No icons to delete.");
     }
-  };
+
+    // 3. 状態をクリアしてUIを更新
+    setDeletedIconIds([]);
+    setProjects((prev) =>
+      prev.map((project) =>
+        project.id === updatedProject.id ? updatedProject : project
+      )
+    );
+    setSelectedProject(updatedProject);
+
+    // 完了メッセージを表示
+    alert("更新が完了しました。");
+
+    // /edit ページにリダイレクト
+    window.location.href = "/edit";
+
+    console.log("Project and icons update completed successfully.");
+  } catch (error) {
+    console.error(
+      "An error occurred during the update process:",
+      error.response?.data || error.message
+    );
+  }
+};
+
+
+  // const handleCreateBlock = async () => {
+  //   if (!newBlockName || !selectedProject) return;
+  //   try {
+  //     const newBlock = await createBlock(selectedProject.id, { tag_name: newBlockName });
+  //     setBlocks((prev) => [...prev, newBlock]);
+  //     setNewBlockName("");
+  //   } catch (error) {
+  //     console.error("ブロックの作成に失敗しました:", error);
+  //   }
+  // };
 
   const handleCreateIcon = async (blockId) => {
-    if (!newIconName || !newIconUrl) return;
+    if (!newIconName) return;
+  
     try {
+      // アイコンの存在を確認
+      const iconData = await validateIcon(newIconName);
+      if (!iconData) {
+        alert("アイコンが存在しません。正しい名前を入力してください。");
+        return;
+      }
+  
+      // アイコンを追加
       const newIcon = await createIcon(blockId, {
-        name: newIconName,
-        image_url: newIconUrl,
+        name: iconData.name,
+        image_url: iconData.image_url,
       });
+  
+      // UIを更新
       setBlockIconsMap((prev) => ({
         ...prev,
         [blockId]: [...(prev[blockId] || []), newIcon],
       }));
       setNewIconName("");
-      setNewIconUrl("");
+      console.log("アイコンが追加されました:", newIcon);
     } catch (error) {
       console.error("アイコンの作成に失敗しました:", error);
     }
   };
+  
+
+
+  const handleDeleteIcon = (iconId, blockId) => {
+    if (!iconId || !blockId) return;
+  
+    try {
+      // ローカル状態から削除
+      setBlockIconsMap((prev) => {
+        const newBlockIconsMap = { ...prev };
+        newBlockIconsMap[blockId] = newBlockIconsMap[blockId].filter(
+          (icon) => icon.id !== iconId
+        );
+        return newBlockIconsMap;
+      });
+  
+      // 削除対象アイコンをリストに追加
+      setDeletedIconIds((prev) => [...prev, { iconId, blockId }]);
+  
+      onClose();
+    } catch (error) {
+      console.error("アイコン削除処理でエラーが発生しました:", error);
+    }
+  };
+  
+
 
   const handleIconClick = (icon) => {
     setSelectedIcon(icon); // 選択されたアイコンを設定
@@ -344,7 +421,7 @@ const EditPage = () => {
                 <FormControl mt={4}>
                   <FormLabel>アイコンの追加</FormLabel>
                   <Input
-                    placeholder="例）ウェルスナビ"
+                    placeholder="アイコン名を入力"
                     value={newIconName}
                     onChange={(e) => setNewIconName(e.target.value)}
                   />
@@ -360,7 +437,7 @@ const EditPage = () => {
             ))}
           </SimpleGrid>
 
-            <FormControl mt={4}>
+            {/* <FormControl mt={4}>
                   <Heading as="h4" size="sm" mb={4}>
                     ブロックの追加
                   </Heading>              <Input
@@ -371,7 +448,7 @@ const EditPage = () => {
               <Button colorScheme="teal" mt={2} onClick={handleCreateBlock}>
                 タグを追加
               </Button>
-            </FormControl>
+            </FormControl> */}
           </Box>
         )}
       </VStack>
@@ -399,9 +476,14 @@ const EditPage = () => {
             <Text>{selectedIcon?.name} を削除しますか？</Text>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="red" mr={3} onClick={() => handleDeleteIcon(selectedIcon?.id)}>
-              削除
-            </Button>
+          <Button
+            colorScheme="red"
+            mr={3}
+            onClick={() => handleDeleteIcon(selectedIcon?.id, selectedIcon?.block_id)}
+          >
+            削除
+          </Button>
+
             <Button variant="ghost" onClick={onClose}>キャンセル</Button>
           </ModalFooter>
         </ModalContent>

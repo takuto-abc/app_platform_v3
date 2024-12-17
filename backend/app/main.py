@@ -111,3 +111,32 @@ def create_icon(block_id: int, icon: IconCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_icon)
     return new_icon
+
+@app.delete("/blocks/{block_id}/icons/{icon_id}", response_model=IconRead)
+def delete_icon(block_id: int, icon_id: int, db: Session = Depends(get_db)):
+    icon = db.query(Icon).filter(Icon.id == icon_id, Icon.block_id == block_id).first()
+    if not icon:
+        raise HTTPException(status_code=404, detail="Icon not found")
+    db.delete(icon)
+    db.commit()
+    return icon
+
+
+@app.get("/icons/validate", response_model=IconRead)
+def validate_icon(name: str, db: Session = Depends(get_db)):
+    icon = db.query(Icon).filter(Icon.name == name).first()
+    if not icon:
+        raise HTTPException(status_code=404, detail="Icon not found")
+    return icon
+
+
+@app.put("/projects/{project_id}", response_model=ProjectRead)
+def update_project(project_id: int, project: ProjectCreate, db: Session = Depends(get_db)):
+    existing_project = db.query(Project).filter(Project.id == project_id).first()
+    if not existing_project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    existing_project.name = project.name
+    existing_project.description = project.description
+    db.commit()
+    db.refresh(existing_project)
+    return existing_project

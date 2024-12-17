@@ -3,6 +3,9 @@
 最新版でインストール
 pip install --upgrade -r requirements.txt
 
-ModuleNotFoundError: No module named 'app'
+開発サーバー起動
 cd backend 
 uvicorn app.main:app --reload
+
+cd frontend
+npm run dev
