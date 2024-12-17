@@ -142,12 +142,11 @@ export const updateProject = async (projectId, projectData) => {
  */
 export const validateIcon = async (iconName) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/icons/validate`, {
-      params: { name: iconName },
-    });
-    return response.data;
+    const response = await axios.get(`${API_BASE_URL}/icons/validate?name=${iconName}`);
+    return response.data; // 候補アイコンのリストを返す
   } catch (error) {
-    console.error(`アイコン ${iconName} の確認に失敗しました:`, error);
+    console.error("アイコン候補の検証に失敗しました:", error);
     throw error;
   }
 };
+

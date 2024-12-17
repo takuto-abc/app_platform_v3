@@ -56,6 +56,8 @@ const EditPage = () => {
   const [selectedIcon, setSelectedIcon] = useState(null); // 選択されたアイコン
   const { isOpen, onOpen, onClose } = useDisclosure(); // モーダルの開閉状態
   const [deletedIconIds, setDeletedIconIds] = useState([]);
+  const [suggestedIcons, setSuggestedIcons] = useState([]); // アイコン候補
+
 
 
   // データフェッチ
@@ -182,36 +184,25 @@ const EditPage = () => {
   //   }
   // };
 
-  const handleCreateIcon = async (blockId) => {
-    if (!newIconName) return;
-  
+  const handleCreateIcon = async (blockId, selectedIcon) => {
     try {
-      // アイコンの存在を確認
-      const iconData = await validateIcon(newIconName);
-      if (!iconData) {
-        alert("アイコンが存在しません。正しい名前を入力してください。");
-        return;
-      }
-  
-      // アイコンを追加
       const newIcon = await createIcon(blockId, {
-        name: iconData.name,
-        image_url: iconData.image_url,
+        name: selectedIcon.name,
+        image_url: selectedIcon.image_url,
       });
   
-      // UIを更新
       setBlockIconsMap((prev) => ({
         ...prev,
         [blockId]: [...(prev[blockId] || []), newIcon],
       }));
       setNewIconName("");
+      setSuggestedIcons([]); // 候補をクリア
       console.log("アイコンが追加されました:", newIcon);
     } catch (error) {
       console.error("アイコンの作成に失敗しました:", error);
     }
   };
   
-
 
   const handleDeleteIcon = (iconId, blockId) => {
     if (!iconId || !blockId) return;
@@ -236,10 +227,27 @@ const EditPage = () => {
   };
   
 
-
   const handleIconClick = (icon) => {
     setSelectedIcon(icon); // 選択されたアイコンを設定
     onOpen(); // モーダルを開く
+  };
+  
+  const handleIconInputChange = async (inputValue) => {
+    setNewIconName(inputValue);
+  
+    if (!inputValue.trim()) {
+      setSuggestedIcons([]); // 入力が空の場合は候補をリセット
+      return;
+    }
+  
+    try {
+      // API で候補アイコンを取得
+      const suggestions = await validateIcon(inputValue);
+      setSuggestedIcons(suggestions); // 候補を状態に保存
+    } catch (error) {
+      console.error("アイコン候補の取得に失敗しました:", error);
+      setSuggestedIcons([]); // エラー時も候補をリセット
+    }
   };
   
   
@@ -423,15 +431,32 @@ const EditPage = () => {
                   <Input
                     placeholder="アイコン名を入力"
                     value={newIconName}
-                    onChange={(e) => setNewIconName(e.target.value)}
-                  />
-                  <Button
-                    colorScheme="teal"
-                    mt={2}
-                    onClick={() => handleCreateIcon(block.id)}
-                  >
-                    アイコンを追加
-                  </Button>
+                    onChange={(e) => handleIconInputChange(e.target.value)} // 正しい関数を指定
+                    />
+                  <Box mt={2}>
+                    {suggestedIcons.length > 0 && (
+                      <List spacing={2}>
+                        {suggestedIcons.map((icon) => (
+                          <ListItem
+                            key={icon.id}
+                            cursor="pointer"
+                            onClick={() => handleCreateIcon(block.id, icon)} // 候補を選択して追加
+                          >
+                            <Flex alignItems="center">
+                              <img
+                                src={icon.image_url}
+                                alt={icon.name}
+                                width="24"
+                                height="24"
+                                style={{ marginRight: "8px" }}
+                              />
+                              <Text>{icon.name}</Text>
+                            </Flex>
+                          </ListItem>
+                        ))}
+                      </List>
+                    )}
+                  </Box>
                 </FormControl>
               </Box>
             ))}

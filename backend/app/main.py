@@ -122,12 +122,12 @@ def delete_icon(block_id: int, icon_id: int, db: Session = Depends(get_db)):
     return icon
 
 
-@app.get("/icons/validate", response_model=IconRead)
+@app.get("/icons/validate")
 def validate_icon(name: str, db: Session = Depends(get_db)):
-    icon = db.query(Icon).filter(Icon.name == name).first()
-    if not icon:
-        raise HTTPException(status_code=404, detail="Icon not found")
-    return icon
+    icons = db.query(Icon).filter(Icon.name.ilike(f"%{name}%")).all()
+    if not icons:
+        raise HTTPException(status_code=404, detail="No icons found")
+    return icons
 
 
 @app.put("/projects/{project_id}", response_model=ProjectRead)
