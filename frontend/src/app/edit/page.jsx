@@ -16,6 +16,7 @@ import {
   ListItem,
   SimpleGrid,
   Link,
+  useToast,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -58,6 +59,7 @@ const EditPage = () => {
   const [deletedIconIds, setDeletedIconIds] = useState([]);
   const [suggestedIcons, setSuggestedIcons] = useState([]); // アイコン候補
   const [suggestedIconsMap, setSuggestedIconsMap] = useState({});
+  const toast = useToast(); // Chakra UI の Toast フック
 
 
 
@@ -242,8 +244,10 @@ const EditPage = () => {
     setSelectedIcon(icon); // 選択されたアイコンを設定
     onOpen(); // モーダルを開く
   };
+
   
   const handleIconInputChange = async (inputValue, blockId) => {
+    // 各ブロックに紐付けた入力値を保存
     setNewIconNamesMap((prev) => ({
       ...prev,
       [blockId]: {
@@ -252,30 +256,48 @@ const EditPage = () => {
     }));
   
     if (!inputValue.trim()) {
+      // 入力が空の場合、該当ブロックの候補をリセット
       setSuggestedIconsMap((prev) => ({
         ...prev,
-        [blockId]: [], // 入力が空の場合、該当ブロックの候補をリセット
+        [blockId]: [],
       }));
       return;
     }
   
     try {
-      // API で候補アイコンを取得
+      // APIで候補アイコンを取得
       const suggestions = await validateIcon(inputValue);
   
-      // 候補を該当ブロックの状態に保存
+      // 頭文字に一致するアイコンだけをフィルタリングし、重複を排除
+      const filteredSuggestions = suggestions
+        .filter((icon) => icon.name.toLowerCase().startsWith(inputValue.toLowerCase()))
+        .filter(
+          (icon, index, self) =>
+            index === self.findIndex((t) => t.name === icon.name)
+        );
+  
+      // 該当ブロックの候補リストを更新
       setSuggestedIconsMap((prev) => ({
         ...prev,
-        [blockId]: suggestions,
+        [blockId]: filteredSuggestions,
       }));
     } catch (error) {
-      console.error("アイコン候補の取得に失敗しました:", error);
+      toast({
+        title: "エラー",
+        description: "アイコン候補の取得に失敗しました。再度お試しください。",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      // エラー時も該当ブロックの候補をリセット
       setSuggestedIconsMap((prev) => ({
         ...prev,
         [blockId]: [],
-      })); // エラー時も該当ブロックの候補をリセット
+      }));
     }
   };
+  
   
   
   if (loading) {
@@ -454,37 +476,37 @@ const EditPage = () => {
                 </SimpleGrid>
 
                 <FormControl mt={4}>
-          <FormLabel>アイコンの追加</FormLabel>
-          <Input
-              placeholder="アイコン名を入力"
-              value={newIconNamesMap[block.id]?.iconName || ""} // blockIdごとの入力値を参照
-              onChange={(e) => handleIconInputChange(e.target.value, block.id)} // blockIdを渡す
-          />
-          <Box mt={2}>
-            {suggestedIconsMap[block.id]?.length > 0 && ( // 該当ブロックの候補のみ表示
-              <List spacing={2}>
-                {suggestedIconsMap[block.id].map((icon) => (
-                  <ListItem
-                    key={icon.id}
-                    cursor="pointer"
-                    onClick={() => handleCreateIcon(block.id, icon)} // 候補を選択して追加
-                  >
-                    <Flex alignItems="center">
-                      <img
-                        src={icon.image_url}
-                        alt={icon.name}
-                        width="24"
-                        height="24"
-                        style={{ marginRight: "8px" }}
-                      />
-                      <Text>{icon.name}</Text>
-                    </Flex>
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </Box>
-        </FormControl>
+                  <FormLabel>アイコンの追加</FormLabel>
+                  <Input
+                    placeholder="アイコン名を入力"
+                    value={newIconNamesMap[block.id]?.iconName || ""} // blockIdごとの入力値を参照
+                    onChange={(e) => handleIconInputChange(e.target.value, block.id)} // blockIdを渡す
+                  />
+                  <Box mt={2}>
+                    {suggestedIconsMap[block.id]?.length > 0 && ( // 該当ブロックの候補のみ表示
+                      <List spacing={2}>
+                        {suggestedIconsMap[block.id].map((icon) => (
+                          <ListItem
+                            key={icon.id}
+                            cursor="pointer"
+                            onClick={() => handleCreateIcon(block.id, icon)} // 候補を選択して追加
+                          >
+                            <Flex alignItems="center">
+                              <img
+                                src={icon.image_url}
+                                alt={icon.name}
+                                width="24"
+                                height="24"
+                                style={{ marginRight: "8px" }}
+                              />
+                              <Text>{icon.name}</Text>
+                            </Flex>
+                          </ListItem>
+                        ))}
+                      </List>
+                    )}
+                  </Box>
+                </FormControl>
               </Box>
             ))}
           </SimpleGrid>
