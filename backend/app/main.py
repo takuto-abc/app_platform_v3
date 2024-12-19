@@ -79,14 +79,21 @@ def read_project(project_id: int, db: Session = Depends(get_db)):
 
 @app.put("/projects/{project_id}", response_model=ProjectRead)
 def update_project(project_id: int, project: ProjectCreate, db: Session = Depends(get_db)):
+    # プロジェクトを取得
     existing_project = db.query(Project).filter(Project.id == project_id).first()
     if not existing_project:
         raise HTTPException(status_code=404, detail="Project not found")
+    
+    # プロジェクト情報を更新
     existing_project.name = project.name
     existing_project.description = project.description
+
+    # データベースへコミット
     db.commit()
     db.refresh(existing_project)
     return existing_project
+
+
 
 
 
@@ -112,10 +119,11 @@ def create_block(project_id: int, block: BlockCreate, db: Session = Depends(get_
 # 論理削除されていないものだけを取得（フラグ=False）
 @app.get("/blocks/{block_id}/icons", response_model=list[IconRead])
 def read_icons(block_id: int, db: Session = Depends(get_db)):
-    icons = db.query(Icon).filter(Icon.block_id == block_id).all()
+    icons = db.query(Icon).filter(Icon.block_id == block_id, Icon.is_deleted == False).all()
     if not icons:
         raise HTTPException(status_code=404, detail="Icons not found for the block")
     return icons
+
 
 
 @app.post("/blocks/{block_id}/icons", response_model=IconRead)
@@ -133,9 +141,11 @@ def delete_icon(block_id: int, icon_id: int, db: Session = Depends(get_db)):
     icon = db.query(Icon).filter(Icon.id == icon_id, Icon.block_id == block_id).first()
     if not icon:
         raise HTTPException(status_code=404, detail="Icon not found")
-    db.delete(icon)
+    # 論理削除
+    icon.is_deleted = True
     db.commit()
     return icon
+
 
 
 @app.get("/icons/validate")

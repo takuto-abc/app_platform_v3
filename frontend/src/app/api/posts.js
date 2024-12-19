@@ -101,16 +101,23 @@ export const createIcon = async (blockId, icon) => {
 
 export const deleteIcon = async (blockId, iconId) => {
   try {
-    // ここをDBから削除ではなく、論理削除に変更
     const response = await axios.delete(
-      `${API_BASE_URL}/blocks/${blockId}/icons/${iconId}`
+      `${API_BASE_URL}/blocks/${blockId}/icons/${iconId}`,
+      { is_deleted: true },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
     );
     return response.data;
   } catch (error) {
-    console.error(`アイコン ${iconId} の削除に失敗しました:`, error.response?.data || error.message);
+    console.error(
+      `アイコン ${iconId} の論理削除に失敗しました:`,
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
+
 
 
 /**

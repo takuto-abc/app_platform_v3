@@ -117,7 +117,6 @@ const EditPage = () => {
     return;
   }
 
-  // 確認ダイアログを表示
   const isConfirmed = window.confirm("更新します、よろしいですか？");
   if (!isConfirmed) {
     console.log("更新がキャンセルされました。");
@@ -125,34 +124,34 @@ const EditPage = () => {
   }
 
   try {
-    // 1. プロジェクト情報を更新
     console.log("Updating project with ID:", selectedProject.id);
     const updatedProject = await updateProject(selectedProject.id, {
       name: editingProjectName,
       description: editingProjectDescription,
     });
-    console.log("Project updated successfully:", updatedProject);
 
-    // 2. 削除対象のアイコンを一括削除
     if (deletedIconIds.length > 0) {
       console.log("Deleting icons:", deletedIconIds);
       for (const { iconId, blockId } of deletedIconIds) {
-        try {
-          // APIにdeleteメソッドでリクエストを送信
-          await deleteIcon(blockId, iconId);
-          console.log(`アイコン削除成功: blockId=${blockId}, iconId=${iconId}`);
-        } catch (deleteError) {
-          console.error(
-            `Failed to delete icon (blockId=${blockId}, iconId=${iconId}):`,
-            deleteError.response?.data || deleteError.message
-          );
-        }
+        await deleteIcon(blockId, iconId);
       }
-    } else {
-      console.log("No icons to delete.");
     }
 
-    // 3. 状態をクリアしてUIを更新
+    // 最新データを取得
+    const blocksData = await fetchBlocks(selectedProject.id);
+    setBlocks(blocksData);
+
+    const iconsDataPromises = blocksData.map((block) =>
+      fetchIcons(block.id).then((icons) => ({ blockId: block.id, icons }))
+    );
+    const iconsDataResults = await Promise.all(iconsDataPromises);
+
+    const newBlockIconsMap = {};
+    iconsDataResults.forEach(({ blockId, icons }) => {
+      newBlockIconsMap[blockId] = icons;
+    });
+    setBlockIconsMap(newBlockIconsMap);
+
     setDeletedIconIds([]);
     setProjects((prev) =>
       prev.map((project) =>
@@ -161,18 +160,11 @@ const EditPage = () => {
     );
     setSelectedProject(updatedProject);
 
-    // 完了メッセージを表示
     alert("更新が完了しました。");
-
-    // /edit ページにリダイレクト
     window.location.href = "/edit";
-
-    console.log("Project and icons update completed successfully.");
+    // console.log("Project and icons update completed successfully.");
   } catch (error) {
-    console.error(
-      "An error occurred during the update process:",
-      error.response?.data || error.message
-    );
+    console.error("An error occurred during the update process:", error.response?.data || error.message);
   }
 };
 
