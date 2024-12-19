@@ -106,6 +106,24 @@ def update_project(project_id: int, project: ProjectCreate, db: Session = Depend
     return existing_project
 
 
+@app.delete("/projects/{project_id}", response_model=ProjectRead)
+def delete_project(project_id: int, db: Session = Depends(get_db)):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # 関連するブロックとアイコンも削除
+    db.query(Icon).filter(Icon.block_id.in_(
+        db.query(Block.id).filter(Block.project_id == project_id)
+    )).delete(synchronize_session=False)
+    
+    db.query(Block).filter(Block.project_id == project_id).delete(synchronize_session=False)
+    
+    # プロジェクトを削除
+    db.delete(project)
+    db.commit()
+    return project
+
 
 
 

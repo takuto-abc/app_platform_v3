@@ -41,6 +41,7 @@ import {
   createProject,
   deleteIcon,
   validateIcon,
+  deleteProject,
 } from "../api/posts";
 
 const EditPage = () => {
@@ -143,6 +144,7 @@ const EditPage = () => {
 
 
  // CRUD
+ // Project
  const handleCreateProject = async () => {
   setIsSubmitting(true);
   try {
@@ -243,19 +245,51 @@ const handleUpdateProject = async () => {
 };
 
 
+const handleDeleteProject = async () => {
+  if (!selectedProject) {
+    console.error("Error: No project selected.");
+    return;
+  }
 
-  // const handleCreateBlock = async () => {
-  //   if (!newBlockName || !selectedProject) return;
-  //   try {
-  //     const newBlock = await createBlock(selectedProject.id, { tag_name: newBlockName });
-  //     setBlocks((prev) => [...prev, newBlock]);
-  //     setNewBlockName("");
-  //   } catch (error) {
-  //     console.error("ブロックの作成に失敗しました:", error);
-  //   }
-  // };
+  const isConfirmed = window.confirm("本当にこのプロジェクトを削除しますか？");
+  if (!isConfirmed) {
+    console.log("削除がキャンセルされました。");
+    return;
+  }
+
+  try {
+    console.log("Deleting project with ID:", selectedProject.id); // デバッグ用ログ
+
+    // API 呼び出し
+    await deleteProject(selectedProject.id);
+
+    toast({
+      title: "プロジェクトが削除されました。",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+
+    // 成功した場合にリダイレクト
+    setTimeout(() => {
+      window.location.href = "/edit"; // `/edit` に遷移
+    }, 3000);
+  } catch (error) {
+    console.error("削除処理中にエラーが発生しました:", error.response?.data || error.message || error); // エラー詳細を出力
+    toast({
+      title: "削除に失敗しました。",
+      description: "もう一度お試しください。",
+      status: "error",
+      duration: 5000,
+      isClosable: true,
+    });
+  }
+};
 
 
+
+
+// Icon
   const handleCreateIcon = async (blockId, selectedIcon) => {
     try {
       const newIcon = await createIcon(blockId, {
@@ -315,7 +349,6 @@ const handleUpdateProject = async () => {
   };
   
   
-
   const handleIconClick = (icon) => {
     setSelectedIcon(icon); // 選択されたアイコンを設定
     onOpen(); // モーダルを開く
@@ -509,9 +542,17 @@ const handleUpdateProject = async () => {
         {/* プロジェクト編集 */}
         {selectedProject && (
           <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm" width="100%">
-            <Heading as="h3" size="md" mb={4}>
-              プロジェクト編集
-            </Heading>
+            <Flex justifyContent="space-between" alignItems="center" mb={4}>
+              <Heading as="h3" size="md">
+                プロジェクト編集
+              </Heading>
+              <Button
+                colorScheme="red"
+                onClick={handleDeleteProject} // 削除処理を呼び出す
+              >
+                プロジェクトを削除
+              </Button>
+            </Flex>
             <FormControl mb={2}>
               <FormLabel>プロジェクト名</FormLabel>
               <Input

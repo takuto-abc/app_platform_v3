@@ -81,6 +81,24 @@ export const updateProject = async (projectId, projectData) => {
   }
 };
 
+
+/**
+ * プロジェクトを削除する関数
+ * @param {number} projectId プロジェクトID
+ * @returns {Promise<void>}
+ */
+export const deleteProject = async (projectId) => {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/projects/${projectId}`);
+    console.log("プロジェクト削除成功:", response.data); // デバッグログ
+    return response.data;
+  } catch (error) {
+    console.error("プロジェクト削除API呼び出しに失敗:", error.response?.data || error.message || error);
+    throw error;
+  }
+};
+
+
 /**
  * 特定のプロジェクトに紐づくブロックを取得する関数
  * @param {number} projectId プロジェクトID
