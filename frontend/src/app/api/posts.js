@@ -203,7 +203,7 @@ export const validateIcon = async (iconName) => {
     const response = await axios.get(`${API_BASE_URL}/icons/validate?name=${iconName}`);
     return response.data; // 候補アイコンのリストを返す
   } catch (error) {
-    console.error("アイコン候補の検証に失敗しました:", error);
+    console.warn("アイコン候補の検証に失敗しました:", error);
     throw error;
   }
 };
