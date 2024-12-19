@@ -13,6 +13,7 @@ import {
   FormControl,
   FormLabel,
   Button,
+  IconButton,
   List,
   ListItem,
   SimpleGrid,
@@ -27,7 +28,7 @@ import {
   ModalCloseButton,
   ModalFooter,
 } from "@chakra-ui/react";
-import { AddIcon } from "@chakra-ui/icons";
+import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import {
   fetchProjects,
   fetchBlocks,
