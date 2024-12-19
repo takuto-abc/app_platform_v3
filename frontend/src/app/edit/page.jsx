@@ -138,6 +138,7 @@ const EditPage = () => {
       console.log("Deleting icons:", deletedIconIds);
       for (const { iconId, blockId } of deletedIconIds) {
         try {
+          // APIにdeleteメソッドでリクエストを送信
           await deleteIcon(blockId, iconId);
           console.log(`アイコン削除成功: blockId=${blockId}, iconId=${iconId}`);
         } catch (deleteError) {

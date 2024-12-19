@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -39,6 +39,7 @@ class Icon(Base):
     name = Column(String, nullable=False)
     image_url = Column(String, nullable=False)
     block_id = Column(Integer, ForeignKey("blocks.id", ondelete="CASCADE"))
+    is_deleted = Column(Boolean, nullable=False, default=False)  # 論理削除のフラグ
 
     # リレーション
     block = relationship("Block", back_populates="icons")
