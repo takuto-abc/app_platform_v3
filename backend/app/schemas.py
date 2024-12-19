@@ -70,3 +70,8 @@ class ProjectRead(ProjectBase):
 
     class Config:
         orm_mode = True
+
+class ProjectUpdate(BaseModel):
+    name: str
+    description: Optional[str]
+    tags: List[str]  

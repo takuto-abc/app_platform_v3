@@ -338,16 +338,14 @@ const EditPage = () => {
   };
   
   const handleIconInputChange = async (inputValue, blockId) => {
-    // 各ブロックに紐付けた入力値を保存
+    // 入力値を保存
     setNewIconNamesMap((prev) => ({
       ...prev,
-      [blockId]: {
-        iconName: inputValue, // 入力値を保存
-      },
+      [blockId]: { iconName: inputValue },
     }));
   
+    // 入力が空白の場合、候補リストをクリア
     if (!inputValue.trim()) {
-      // 入力が空の場合、該当ブロックの候補をリセット
       setSuggestedIconsMap((prev) => ({
         ...prev,
         [blockId]: [],
@@ -356,38 +354,35 @@ const EditPage = () => {
     }
   
     try {
-      // APIで候補アイコンを取得
+      // アイコン候補をAPIから取得
       const suggestions = await validateIcon(inputValue);
   
-      // 頭文字に一致するアイコンだけをフィルタリングし、重複を排除
+      // 入力値の頭文字に一致し、重複を排除
       const filteredSuggestions = suggestions
-        .filter((icon) => icon.name.toLowerCase().startsWith(inputValue.toLowerCase()))
+        .filter((icon) => 
+          icon.name.toLowerCase().startsWith(inputValue.toLowerCase())
+        )
         .filter(
           (icon, index, self) =>
             index === self.findIndex((t) => t.name === icon.name)
         );
   
-      // 該当ブロックの候補リストを更新
+      // 候補リストを更新
       setSuggestedIconsMap((prev) => ({
         ...prev,
         [blockId]: filteredSuggestions,
       }));
     } catch (error) {
-      toast({
-        title: "エラー",
-        description: "アイコン候補の取得に失敗しました。再度お試しください。",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-
-      // エラー時も該当ブロックの候補をリセット
+      console.error("アイコン候補の取得に失敗しました:", error);
+  
+      // エラー時には候補リストをクリア
       setSuggestedIconsMap((prev) => ({
         ...prev,
         [blockId]: [],
       }));
     }
   };
+  
   
   
   
@@ -589,11 +584,11 @@ const EditPage = () => {
                   <FormLabel>アイコンの追加</FormLabel>
                   <Input
                     placeholder="アイコン名を入力"
-                    value={newIconName} // 状態をバインド
-                    onChange={(e) => setNewIconName(e.target.value)} // 入力値を状態に保存
+                    value={newIconNamesMap[block.id]?.iconName || ""} // 入力値を管理
+                    onChange={(e) => handleIconInputChange(e.target.value, block.id)} // 関数を呼び出す
                   />
                   <Box mt={2}>
-                    {suggestedIconsMap[block.id]?.length > 0 && ( // 該当ブロックの候補のみ表示
+                    {suggestedIconsMap[block.id]?.length > 0 && ( // 候補アイコンを表示
                       <List spacing={2}>
                         {suggestedIconsMap[block.id].map((icon) => (
                           <ListItem
