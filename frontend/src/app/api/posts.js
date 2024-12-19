@@ -101,7 +101,7 @@ export const fetchIcons = async (blockId) => {
     const response = await axios.get(`${API_BASE_URL}/blocks/${blockId}/icons`);
     return response.data;
   } catch (error) {
-    console.error(`ブロック ${blockId} のアイコン取得に失敗しました:`, error);
+    console.warn(`ブロック ${blockId} のアイコン取得に失敗しました:`, error);
     throw error;
   }
 };

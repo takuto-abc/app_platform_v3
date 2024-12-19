@@ -76,6 +76,7 @@ const EditPage = () => {
       setLoading(true);
       try {
         const projectData = await fetchProjects();
+        console.log("取得したプロジェクトデータ:", projectData);
         setProjects(projectData);
       } catch (error) {
         console.error("プロジェクトデータの取得に失敗しました:", error);
@@ -83,36 +84,62 @@ const EditPage = () => {
         setLoading(false);
       }
     };
-
+  
     fetchInitialData();
   }, []);
+  
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
-      if (!selectedProject) return;
+      if (!selectedProject) {
+        console.warn("selectedProject が null または未定義です");
+        return;
+      }
+  
       try {
+        console.log("プロジェクト詳細取得開始: ", selectedProject);
+  
+        // ブロックデータの取得
         const blocksData = await fetchBlocks(selectedProject.id);
+        console.log("取得したブロックデータ:", blocksData);
         setBlocks(blocksData);
-
-        const iconsDataPromises = blocksData.map((block) =>
-          fetchIcons(block.id).then((icons) => ({ blockId: block.id, icons }))
-        );
+  
+        // アイコンデータの取得
+        const iconsDataPromises = blocksData.map((block) => {
+          console.log("ブロックID:", block.id);
+          return fetchIcons(block.id)
+            .then((icons) => {
+              return { blockId: block.id, icons };
+            })
+            .catch((error) => {
+              console.warn(`fetchIcons エラー (blockId: ${block.id}):`, error);
+              return { blockId: block.id, icons: [] }; // エラー発生時は空の配列を返す
+            });
+        });
+  
         const iconsDataResults = await Promise.all(iconsDataPromises);
-
+        console.log("全てのアイコンデータ:", iconsDataResults);
+  
+        // ブロックとアイコンのマッピング
         const newBlockIconsMap = {};
         iconsDataResults.forEach(({ blockId, icons }) => {
           newBlockIconsMap[blockId] = icons;
         });
         setBlockIconsMap(newBlockIconsMap);
+  
+        // プロジェクト情報を編集用にセット
         setEditingProjectName(selectedProject.name);
         setEditingProjectDescription(selectedProject.description);
+        console.log("編集用データ設定完了");
       } catch (error) {
         console.error("プロジェクト詳細データの取得に失敗しました:", error);
       }
     };
-
+  
     fetchProjectDetails();
   }, [selectedProject]);
+  
+
 
 
  // CRUD
