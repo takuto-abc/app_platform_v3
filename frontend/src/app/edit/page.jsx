@@ -49,7 +49,7 @@ const EditPage = () => {
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectDescription, setNewProjectDescription] = useState("");
   const [newBlockName, setNewBlockName] = useState("");
-  const [newIconName, setNewIconName] = useState("");
+  const [newIconNamesMap, setNewIconNamesMap] = useState({});
   const [newIconUrl, setNewIconUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [isAddingNewProject, setIsAddingNewProject] = useState(false); // フォームの開閉管理
@@ -57,6 +57,7 @@ const EditPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure(); // モーダルの開閉状態
   const [deletedIconIds, setDeletedIconIds] = useState([]);
   const [suggestedIcons, setSuggestedIcons] = useState([]); // アイコン候補
+  const [suggestedIconsMap, setSuggestedIconsMap] = useState({});
 
 
 
@@ -184,6 +185,7 @@ const EditPage = () => {
   //   }
   // };
 
+
   const handleCreateIcon = async (blockId, selectedIcon) => {
     try {
       const newIcon = await createIcon(blockId, {
@@ -195,14 +197,23 @@ const EditPage = () => {
         ...prev,
         [blockId]: [...(prev[blockId] || []), newIcon],
       }));
-      setNewIconName("");
-      setSuggestedIcons([]); // 候補をクリア
+  
+      // 入力値と候補をクリア
+      setNewIconNamesMap((prev) => ({
+        ...prev,
+        [blockId]: {
+          iconName: "",
+        },
+      }));
+      setSuggestedIconsMap((prev) => ({
+        ...prev,
+        [blockId]: [],
+      }));
       console.log("アイコンが追加されました:", newIcon);
     } catch (error) {
       console.error("アイコンの作成に失敗しました:", error);
     }
   };
-  
 
   const handleDeleteIcon = (iconId, blockId) => {
     if (!iconId || !blockId) return;
@@ -232,21 +243,37 @@ const EditPage = () => {
     onOpen(); // モーダルを開く
   };
   
-  const handleIconInputChange = async (inputValue) => {
-    setNewIconName(inputValue);
+  const handleIconInputChange = async (inputValue, blockId) => {
+    setNewIconNamesMap((prev) => ({
+      ...prev,
+      [blockId]: {
+        iconName: inputValue, // 入力値を保存
+      },
+    }));
   
     if (!inputValue.trim()) {
-      setSuggestedIcons([]); // 入力が空の場合は候補をリセット
+      setSuggestedIconsMap((prev) => ({
+        ...prev,
+        [blockId]: [], // 入力が空の場合、該当ブロックの候補をリセット
+      }));
       return;
     }
   
     try {
       // API で候補アイコンを取得
       const suggestions = await validateIcon(inputValue);
-      setSuggestedIcons(suggestions); // 候補を状態に保存
+  
+      // 候補を該当ブロックの状態に保存
+      setSuggestedIconsMap((prev) => ({
+        ...prev,
+        [blockId]: suggestions,
+      }));
     } catch (error) {
       console.error("アイコン候補の取得に失敗しました:", error);
-      setSuggestedIcons([]); // エラー時も候補をリセット
+      setSuggestedIconsMap((prev) => ({
+        ...prev,
+        [blockId]: [],
+      })); // エラー時も該当ブロックの候補をリセット
     }
   };
   
@@ -427,37 +454,37 @@ const EditPage = () => {
                 </SimpleGrid>
 
                 <FormControl mt={4}>
-                  <FormLabel>アイコンの追加</FormLabel>
-                  <Input
-                    placeholder="アイコン名を入力"
-                    value={newIconName}
-                    onChange={(e) => handleIconInputChange(e.target.value)} // 正しい関数を指定
-                    />
-                  <Box mt={2}>
-                    {suggestedIcons.length > 0 && (
-                      <List spacing={2}>
-                        {suggestedIcons.map((icon) => (
-                          <ListItem
-                            key={icon.id}
-                            cursor="pointer"
-                            onClick={() => handleCreateIcon(block.id, icon)} // 候補を選択して追加
-                          >
-                            <Flex alignItems="center">
-                              <img
-                                src={icon.image_url}
-                                alt={icon.name}
-                                width="24"
-                                height="24"
-                                style={{ marginRight: "8px" }}
-                              />
-                              <Text>{icon.name}</Text>
-                            </Flex>
-                          </ListItem>
-                        ))}
-                      </List>
-                    )}
-                  </Box>
-                </FormControl>
+          <FormLabel>アイコンの追加</FormLabel>
+          <Input
+              placeholder="アイコン名を入力"
+              value={newIconNamesMap[block.id]?.iconName || ""} // blockIdごとの入力値を参照
+              onChange={(e) => handleIconInputChange(e.target.value, block.id)} // blockIdを渡す
+          />
+          <Box mt={2}>
+            {suggestedIconsMap[block.id]?.length > 0 && ( // 該当ブロックの候補のみ表示
+              <List spacing={2}>
+                {suggestedIconsMap[block.id].map((icon) => (
+                  <ListItem
+                    key={icon.id}
+                    cursor="pointer"
+                    onClick={() => handleCreateIcon(block.id, icon)} // 候補を選択して追加
+                  >
+                    <Flex alignItems="center">
+                      <img
+                        src={icon.image_url}
+                        alt={icon.name}
+                        width="24"
+                        height="24"
+                        style={{ marginRight: "8px" }}
+                      />
+                      <Text>{icon.name}</Text>
+                    </Flex>
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </Box>
+        </FormControl>
               </Box>
             ))}
           </SimpleGrid>
