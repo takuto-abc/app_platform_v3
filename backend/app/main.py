@@ -86,7 +86,17 @@ def read_project(project_id: int, db: Session = Depends(get_db)):
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+
+    # 削除されていないアイコンのみを含む形でブロックをフィルタリング
+    filtered_blocks = []
+    for block in project.blocks:
+        filtered_icons = [icon for icon in block.icons if not icon.is_deleted]
+        block.icons = filtered_icons  # フィルタ済みアイコンをセット
+        filtered_blocks.append(block)
+    project.blocks = filtered_blocks
+
     return project
+
 
 
 @app.put("/projects/{project_id}", response_model=ProjectRead)

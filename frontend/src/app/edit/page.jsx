@@ -203,7 +203,7 @@ const handleUpdateProject = async () => {
     return;
   }
 
-  const isConfirmed = window.confirm("更新します、よろしいですか？");
+  const isConfirmed = window.confirm("更新します。よろしいですか？");
   if (!isConfirmed) {
     console.log("更新がキャンセルされました。");
     return;
