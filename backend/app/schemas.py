@@ -21,9 +21,9 @@ class IconBase(BaseModel):
     image_url: str
 
 
-class IconCreate(IconBase):
-    pass
-
+class IconCreate(BaseModel):
+    name: str
+    image_url: str
 
 class IconRead(IconBase):
     id: int
@@ -38,9 +38,10 @@ class BlockBase(BaseModel):
     tag_name: str
 
 
-class BlockCreate(BlockBase):
-    pass
 
+class BlockCreate(BaseModel):
+    tag_name: str
+    icons: Optional[List[IconCreate]] = []  # ブロックに関連するアイコンを追加
 
 class BlockRead(BlockBase):
     id: int
@@ -57,8 +58,11 @@ class ProjectBase(BaseModel):
     description: Optional[str] = None
 
 
-class ProjectCreate(ProjectBase):
-    pass
+class ProjectCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    blocks: Optional[List[BlockCreate]] = []  # プロジェクトに関連するブロックを追加
+
 
 
 class ProjectRead(ProjectBase):

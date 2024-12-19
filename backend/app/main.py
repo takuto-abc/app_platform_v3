@@ -62,11 +62,31 @@ def read_projects(db: Session = Depends(get_db)):
 
 @app.post("/projects", response_model=ProjectRead)
 def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
+    # プロジェクトを作成
     new_project = Project(name=project.name, description=project.description)
     db.add(new_project)
     db.commit()
     db.refresh(new_project)
+
+    # ブロックとアイコンを作成
+    for block_data in project.blocks:
+        new_block = Block(tag_name=block_data.tag_name, project_id=new_project.id)
+        db.add(new_block)
+        db.commit()
+        db.refresh(new_block)
+
+        for icon_data in block_data.icons:
+            new_icon = Icon(
+                name=icon_data.name,
+                image_url=icon_data.image_url,
+                block_id=new_block.id
+            )
+            db.add(new_icon)
+
+    db.commit()  # 最後にまとめてコミット
+
     return new_project
+
 
 
 @app.get("/projects/{project_id}", response_model=ProjectRead)

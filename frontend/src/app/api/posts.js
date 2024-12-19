@@ -17,16 +17,41 @@ export const fetchProjects = async () => {
 };
 
 /**
- * プロジェクトを作成する関数
+ * プロジェクトを作成し、オプションでブロックやアイコンも追加する関数
  * @param {Object} project プロジェクトデータ
+ * @param {Array<Object>} [blocks=[]] 関連付けるブロックのデータ
+ * @param {Array<Object>} [iconsMap={}] 各ブロックに関連付けるアイコンのデータ
  * @returns {Promise<Object>} 作成されたプロジェクト
  */
-export const createProject = async (project) => {
+export const createProject = async (project, blocks = [], iconsMap = {}) => {
   try {
+    // プロジェクトを作成
     const response = await axios.post(`${API_BASE_URL}/projects`, project, {
       headers: { "Content-Type": "application/json" },
     });
-    return response.data;
+    const createdProject = response.data;
+
+    // ブロックとアイコンを追加
+    for (const block of blocks) {
+      const blockResponse = await axios.post(
+        `${API_BASE_URL}/projects/${createdProject.id}/blocks`,
+        block,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      const createdBlock = blockResponse.data;
+
+      if (iconsMap[block.tag_name]) {
+        for (const icon of iconsMap[block.tag_name]) {
+          await axios.post(
+            `${API_BASE_URL}/blocks/${createdBlock.id}/icons`,
+            icon,
+            { headers: { "Content-Type": "application/json" } }
+          );
+        }
+      }
+    }
+
+    return createdProject;
   } catch (error) {
     console.error("プロジェクトの作成に失敗しました:", error);
     throw error;
@@ -99,27 +124,6 @@ export const createIcon = async (blockId, icon) => {
   }
 };
 
-export const deleteIcon = async (blockId, iconId) => {
-  try {
-    const response = await axios.delete(
-      `${API_BASE_URL}/blocks/${blockId}/icons/${iconId}`,
-      { is_deleted: true },
-      {
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error(
-      `アイコン ${iconId} の論理削除に失敗しました:`,
-      error.response?.data || error.message
-    );
-    throw error;
-  }
-};
-
-
-
 /**
  * プロジェクトを更新する関数
  * @param {number} projectId - プロジェクトID
@@ -142,7 +146,6 @@ export const updateProject = async (projectId, projectData) => {
   }
 };
 
-
 /**
  * アイコンが存在するか確認する関数
  * @param {string} iconName アイコン名
@@ -157,4 +160,3 @@ export const validateIcon = async (iconName) => {
     throw error;
   }
 };
-

@@ -6,6 +6,7 @@ import {
   Flex,
   Heading,
   VStack,
+  HStack,
   Text,
   Spinner,
   Input,
@@ -26,6 +27,7 @@ import {
   ModalCloseButton,
   ModalFooter,
 } from "@chakra-ui/react";
+import { AddIcon } from "@chakra-ui/icons";
 import {
   fetchProjects,
   fetchBlocks,
@@ -50,6 +52,8 @@ const EditPage = () => {
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectDescription, setNewProjectDescription] = useState("");
   const [newBlockName, setNewBlockName] = useState("");
+  const [newTags, setNewTags] = useState([{ id: Date.now(), name: "" }]); // タグリストを管理
+  const [newIconName, setNewIconName] = useState(""); 
   const [newIconNamesMap, setNewIconNamesMap] = useState({});
   const [newIconUrl, setNewIconUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -60,6 +64,7 @@ const EditPage = () => {
   const [suggestedIcons, setSuggestedIcons] = useState([]); // アイコン候補
   const [suggestedIconsMap, setSuggestedIconsMap] = useState({});
   const toast = useToast(); // Chakra UI の Toast フック
+  const [isSubmitting, setIsSubmitting] = useState(false); // ローディング制御
 
 
 
@@ -110,6 +115,54 @@ const EditPage = () => {
 
 
  // CRUD
+ const handleCreateProject = async () => {
+  setIsSubmitting(true);
+  try {
+    const tagNames = newTags.map((tag) => tag.name).filter((name) => name.trim() !== "");
+    if (!newProjectName || !newProjectDescription || tagNames.length === 0) {
+      toast({
+        title: "入力エラー",
+        description: "すべてのフィールドを入力してください。",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    // プロジェクト作成APIを呼び出し
+    await createProject({
+      name: newProjectName,
+      description: newProjectDescription,
+      tags: tagNames, // タグを送信
+    });
+
+    toast({
+      title: "作成が完了しました。",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+
+    // `/edit` に遷移
+    setTimeout(() => {
+      window.location.href = "/edit";
+    }, 3000);
+  } catch (error) {
+    console.error("プロジェクト作成に失敗しました:", error);
+    toast({
+      title: "作成に失敗しました。",
+      description: "もう一度お試しください。",
+      status: "error",
+      duration: 5000,
+      isClosable: true,
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
  const handleUpdateProject = async () => {
   if (!selectedProject) {
@@ -238,6 +291,20 @@ const EditPage = () => {
     onOpen(); // モーダルを開く
   };
 
+
+  const handleTagChange = (id, value) => {
+    setNewTags((prevTags) =>
+      prevTags.map((tag) => (tag.id === id ? { ...tag, name: value } : tag))
+    );
+  };
+
+  const handleAddTag = () => {
+    setNewTags((prevTags) => [...prevTags, { id: Date.now(), name: "" }]);
+  };
+
+  const handleRemoveTag = (id) => {
+    setNewTags((prevTags) => prevTags.filter((tag) => tag.id !== id));
+  };
   
   const handleIconInputChange = async (inputValue, blockId) => {
     // 各ブロックに紐付けた入力値を保存
@@ -338,7 +405,10 @@ const EditPage = () => {
               {isAddingNewProject ? "閉じる" : "新規プロジェクト作成"}
             </Button>
 
-            {/* 新規プロジェクト作成フォーム */}
+
+
+
+            {/* 新規プロジェクト作成 */}
             {isAddingNewProject && (
               <Box
                 p={4}
@@ -360,23 +430,34 @@ const EditPage = () => {
                     onChange={(e) => setNewProjectName(e.target.value)}
                   />
                 </FormControl>
-                {/* タグ名フォーム */}
                 <FormControl mb={4}>
                   <FormLabel>タグ名</FormLabel>
-                  <Input
-                    placeholder="タグ名を入力"
-                    value={newBlockName}
-                    onChange={(e) => setNewBlockName(e.target.value)}
-                  />
-                </FormControl>
-                {/* アイコン名フォーム */}
-                <FormControl mb={4}>
-                  <FormLabel>アイコン名</FormLabel>
-                  <Input
-                    placeholder="アイコン名を入力"
-                    value={newIconName}
-                    onChange={(e) => setNewIconName(e.target.value)}
-                  />
+                  {newTags.map((tag, index) => (
+                    <HStack key={tag.id} mb={2}>
+                      <Input
+                        placeholder={`タグ名 ${index + 1}`}
+                        value={tag.name}
+                        onChange={(e) => handleTagChange(tag.id, e.target.value)}
+                      />
+                      {newTags.length > 1 && (
+                        <IconButton
+                          icon={<DeleteIcon />}
+                          aria-label="タグを削除"
+                          onClick={() => handleRemoveTag(tag.id)}
+                          colorScheme="red"
+                        />
+                      )}
+                    </HStack>
+                  ))}
+                  <Button
+                    leftIcon={<AddIcon />}
+                    onClick={handleAddTag}
+                    size="sm"
+                    variant="outline"
+                    mt={2}
+                  >
+                    タグを追加
+                  </Button>
                 </FormControl>
                 <FormControl mb={4}>
                   <FormLabel>説明</FormLabel>
@@ -386,13 +467,18 @@ const EditPage = () => {
                     onChange={(e) => setNewProjectDescription(e.target.value)}
                   />
                 </FormControl>
-                <Button colorScheme="teal" onClick={handleCreateProject}>
-                  作成する
-                </Button>
+                <Flex justifyContent="flex-end">
+                  <Button colorScheme="teal" onClick={handleCreateProject}>
+                    作成する
+                  </Button>
+                </Flex>
               </Box>
             )}
+
           </Box>
         </Box>
+
+
 
 
         {/* プロジェクト編集 */}
@@ -472,8 +558,8 @@ const EditPage = () => {
                   <FormLabel>アイコンの追加</FormLabel>
                   <Input
                     placeholder="アイコン名を入力"
-                    value={newIconNamesMap[block.id]?.iconName || ""} // blockIdごとの入力値を参照
-                    onChange={(e) => handleIconInputChange(e.target.value, block.id)} // blockIdを渡す
+                    value={newIconName} // 状態をバインド
+                    onChange={(e) => setNewIconName(e.target.value)} // 入力値を状態に保存
                   />
                   <Box mt={2}>
                     {suggestedIconsMap[block.id]?.length > 0 && ( // 該当ブロックの候補のみ表示
@@ -556,7 +642,32 @@ const EditPage = () => {
         </ModalContent>
       </Modal>
 
-
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>確認</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <p>プロジェクトを作成します。よろしいですか？</p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              colorScheme="blue"
+              mr={3}
+              onClick={() => {
+                onClose(); // モーダルを閉じる
+                handleCreateProject(); // 作成処理を実行
+              }}
+              isLoading={isSubmitting}
+            >
+              作成する
+            </Button>
+            <Button variant="ghost" onClick={onClose}>
+              キャンセル
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
 
     </Flex>
