@@ -195,7 +195,7 @@ const EditPage = () => {
 
 
 
- const handleUpdateProject = async () => {
+const handleUpdateProject = async () => {
   if (!selectedProject) {
     console.error("Error: No project selected.");
     return;
@@ -209,34 +209,18 @@ const EditPage = () => {
 
   try {
     console.log("Updating project with ID:", selectedProject.id);
-    const updatedProject = await updateProject(selectedProject.id, {
+    const payload = {
       name: editingProjectName,
       description: editingProjectDescription,
-    });
+      tags: blocks.map((block) => block.tag_name), // ブロック名をタグとして送信
+    };
+    console.log("Update Payload:", payload);
 
-    if (deletedIconIds.length > 0) {
-      console.log("Deleting icons:", deletedIconIds);
-      for (const { iconId, blockId } of deletedIconIds) {
-        await deleteIcon(blockId, iconId);
-      }
-    }
+    const updatedProject = await updateProject(selectedProject.id, payload);
 
-    // 最新データを取得
-    const blocksData = await fetchBlocks(selectedProject.id);
-    setBlocks(blocksData);
+    console.log("更新されたプロジェクト:", updatedProject);
 
-    const iconsDataPromises = blocksData.map((block) =>
-      fetchIcons(block.id).then((icons) => ({ blockId: block.id, icons }))
-    );
-    const iconsDataResults = await Promise.all(iconsDataPromises);
-
-    const newBlockIconsMap = {};
-    iconsDataResults.forEach(({ blockId, icons }) => {
-      newBlockIconsMap[blockId] = icons;
-    });
-    setBlockIconsMap(newBlockIconsMap);
-
-    setDeletedIconIds([]);
+    // UIの状態を更新
     setProjects((prev) =>
       prev.map((project) =>
         project.id === updatedProject.id ? updatedProject : project
@@ -244,13 +228,20 @@ const EditPage = () => {
     );
     setSelectedProject(updatedProject);
 
+    // 更新完了のアラートを表示
     alert("更新が完了しました。");
+
+    // `/edit` に遷移
     window.location.href = "/edit";
-    // console.log("Project and icons update completed successfully.");
   } catch (error) {
-    console.error("An error occurred during the update process:", error.response?.data || error.message);
+    console.error("APIエラー詳細:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
   }
 };
+
 
 
   // const handleCreateBlock = async () => {
@@ -294,10 +285,16 @@ const EditPage = () => {
     }
   };
 
-  const handleDeleteIcon = (iconId, blockId) => {
-    if (!iconId || !blockId) return;
+  const handleDeleteIcon = async (iconId, blockId) => {
+    if (!iconId || !blockId) {
+      console.error("無効なアイコンIDまたはブロックID:", { iconId, blockId });
+      return;
+    }
   
     try {
+      // サーバーに削除リクエストを送信
+      await deleteIcon(blockId, iconId);
+  
       // ローカル状態から削除
       setBlockIconsMap((prev) => {
         const newBlockIconsMap = { ...prev };
@@ -307,14 +304,16 @@ const EditPage = () => {
         return newBlockIconsMap;
       });
   
-      // 削除対象アイコンをリストに追加
-      setDeletedIconIds((prev) => [...prev, { iconId, blockId }]);
-  
+      console.log(`アイコン (ID: ${iconId}) が正常に削除されました。`);
       onClose();
     } catch (error) {
-      console.error("アイコン削除処理でエラーが発生しました:", error);
+      console.error("アイコン削除処理でエラーが発生しました:", {
+        message: error.message,
+        response: error.response?.data || "サーバーからの応答なし",
+      });
     }
   };
+  
   
 
   const handleIconClick = (icon) => {

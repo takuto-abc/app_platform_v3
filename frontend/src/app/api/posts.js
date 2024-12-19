@@ -58,6 +58,29 @@ export const createProject = async (project, blocks = [], iconsMap = {}) => {
   }
 };
 
+
+/**
+ * プロジェクトを更新する関数
+ * @param {number} projectId - プロジェクトID
+ * @param {Object} projectData - 更新するプロジェクトのデータ
+ * @returns {Promise<Object>} - 更新されたプロジェクトデータ
+ */
+export const updateProject = async (projectId, projectData) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/projects/${projectId}`,
+      projectData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`プロジェクト ${projectId} の更新に失敗しました:`, error);
+    throw error;
+  }
+};
+
 /**
  * 特定のプロジェクトに紐づくブロックを取得する関数
  * @param {number} projectId プロジェクトID
@@ -124,27 +147,33 @@ export const createIcon = async (blockId, icon) => {
   }
 };
 
+
 /**
- * プロジェクトを更新する関数
- * @param {number} projectId - プロジェクトID
- * @param {Object} projectData - 更新するプロジェクトのデータ
- * @returns {Promise<Object>} - 更新されたプロジェクトデータ
+ * 特定のアイコンを論理削除する関数
+ * @param {number} blockId ブロックID
+ * @param {number} iconId アイコンID
+ * @returns {Promise<Object>} 削除されたアイコンデータ
  */
-export const updateProject = async (projectId, projectData) => {
+export const deleteIcon = async (blockId, iconId) => {
   try {
-    const response = await axios.put(
-      `${API_BASE_URL}/projects/${projectId}`,
-      projectData,
+    const response = await axios.delete(
+      `${API_BASE_URL}/blocks/${blockId}/icons/${iconId}`,
       {
         headers: { "Content-Type": "application/json" },
       }
     );
+    console.log("削除されたアイコンデータ:", response.data);
     return response.data;
   } catch (error) {
-    console.error(`プロジェクト ${projectId} の更新に失敗しました:`, error);
+    console.error("アイコン削除リクエストでエラーが発生しました:", {
+      message: error.message,
+      response: error.response?.data || "レスポンスなし",
+      status: error.response?.status || "ステータスなし",
+    });
     throw error;
   }
 };
+
 
 /**
  * アイコンが存在するか確認する関数
