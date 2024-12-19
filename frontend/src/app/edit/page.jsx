@@ -672,35 +672,6 @@ const EditPage = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>確認</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <p>プロジェクトを作成します。よろしいですか？</p>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              colorScheme="blue"
-              mr={3}
-              onClick={() => {
-                onClose(); // モーダルを閉じる
-                handleCreateProject(); // 作成処理を実行
-              }}
-              isLoading={isSubmitting}
-            >
-              作成する
-            </Button>
-            <Button variant="ghost" onClick={onClose}>
-              キャンセル
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-
     </Flex>
   );
 };
