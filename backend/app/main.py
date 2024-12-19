@@ -68,24 +68,16 @@ def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_project)
 
-    # ブロックとアイコンを作成
-    for block_data in project.blocks:
-        new_block = Block(tag_name=block_data.tag_name, project_id=new_project.id)
+    # ブロックを作成
+    for tag_name in project.tags:
+        new_block = Block(tag_name=tag_name, project_id=new_project.id)
         db.add(new_block)
-        db.commit()
-        db.refresh(new_block)
 
-        for icon_data in block_data.icons:
-            new_icon = Icon(
-                name=icon_data.name,
-                image_url=icon_data.image_url,
-                block_id=new_block.id
-            )
-            db.add(new_icon)
+    db.commit()  # 全てのブロックが保存されてからコミット
 
-    db.commit()  # 最後にまとめてコミット
+    # プロジェクトを再取得して関連付けられたブロックを含めたデータを返す
+    return db.query(Project).filter(Project.id == new_project.id).first()
 
-    return new_project
 
 
 

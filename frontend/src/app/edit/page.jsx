@@ -133,11 +133,13 @@ const EditPage = () => {
     }
 
     // プロジェクト作成APIを呼び出し
-    await createProject({
+    const response = await createProject({
       name: newProjectName,
       description: newProjectDescription,
-      tags: tagNames, // タグを送信
+      tags: tagNames, // タグ名を送信
     });
+
+    console.log("作成されたプロジェクト:", response);
 
     toast({
       title: "作成が完了しました。",
@@ -163,6 +165,7 @@ const EditPage = () => {
     setIsSubmitting(false);
   }
 };
+
 
 
  const handleUpdateProject = async () => {
@@ -436,7 +439,7 @@ const EditPage = () => {
                   {newTags.map((tag, index) => (
                     <HStack key={tag.id} mb={2}>
                       <Input
-                        placeholder={`タグ名 ${index + 1}`}
+                        placeholder={`タグ ${index + 1}`}
                         value={tag.name}
                         onChange={(e) => handleTagChange(tag.id, e.target.value)}
                       />

@@ -41,7 +41,6 @@ class BlockBase(BaseModel):
 
 class BlockCreate(BaseModel):
     tag_name: str
-    icons: Optional[List[IconCreate]] = []  # ブロックに関連するアイコンを追加
 
 class BlockRead(BlockBase):
     id: int
@@ -61,7 +60,7 @@ class ProjectBase(BaseModel):
 class ProjectCreate(BaseModel):
     name: str
     description: Optional[str] = None
-    blocks: Optional[List[BlockCreate]] = []  # プロジェクトに関連するブロックを追加
+    tags: List[str]  # ブロックの代わりに単純なタグ名のリスト
 
 
 
