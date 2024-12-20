@@ -476,34 +476,43 @@ const handleCreateBlock = async () => {
           <List spacing={3}>
             {projects.map((project) => (
               <ListItem
-                key={project.id}
-                cursor="pointer"
-                bg={selectedProject?.id === project.id ? "teal.100" : "white"}
-                p={2}
-                borderRadius="md"
-                onClick={() => {
-                  if (selectedProject?.id === project.id) {
-                    setSelectedProject(null);
-                  } else {
-                    setSelectedProject(project);
-                  }
-                }}
-              >
-                {project.name}
-              </ListItem>
+              key={project.id}
+              cursor={isAddingNewProject ? "not-allowed" : "pointer"} // 新規作成中はカーソルを変更
+              bg={selectedProject?.id === project.id ? "teal.100" : "white"}
+              p={2}
+              borderRadius="md"
+              onClick={() => {
+                if (isAddingNewProject) {
+                  // 新規プロジェクト作成中は編集できない
+                  return;
+                }
+                if (selectedProject?.id === project.id) {
+                  setSelectedProject(null);
+                } else {
+                  setSelectedProject(project);
+                  setIsAddingNewProject(false); // 編集時には新規作成を閉じる
+                }
+              }}
+            >
+              {project.name}
+            </ListItem>
             ))}
           </List>
           <Box width="100%" mt={6}>
             {/* 新規プロジェクト作成ボタン */}
             <Button
               colorScheme="teal"
-              _hover={{ textDecoration: "none" }} // ホバー時の下線を削除
-              onClick={() => setIsAddingNewProject((prev) => !prev)} // フォームの表示/非表示を切り替え
+              _hover={{ textDecoration: "none" }}
+              onClick={() => {
+                if (selectedProject) {
+                  setSelectedProject(null); 
+                }
+                setIsAddingNewProject((prev) => !prev); 
+              }}
+              isDisabled={!!selectedProject} 
             >
               {isAddingNewProject ? "閉じる" : "新規プロジェクト作成"}
             </Button>
-
-
 
 
             {/* 新規プロジェクト作成 */}
