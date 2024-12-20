@@ -469,7 +469,10 @@ const handleCreateBlock = async () => {
   return (
     <Flex direction="column" p={6} bg="gray.50" height="100vh" overflowY="auto">
       <VStack align="start" spacing={6}>
-        <Box width="100%">
+        <Box 
+          width={{ base: "100%", md: "80%", lg: "60%" }} 
+          mx="auto" 
+        >
           <Heading as="h2" size="lg" mb={4}>
             プロジェクト一覧
           </Heading>
@@ -480,6 +483,8 @@ const handleCreateBlock = async () => {
               cursor={isAddingNewProject ? "not-allowed" : "pointer"} // 新規作成中はカーソルを変更
               bg={selectedProject?.id === project.id ? "teal.100" : "white"}
               p={2}
+              border="1px solid"
+              borderColor="green.600" 
               borderRadius="md"
               onClick={() => {
                 if (isAddingNewProject) {
