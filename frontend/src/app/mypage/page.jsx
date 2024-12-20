@@ -35,21 +35,42 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchProjectData = async () => {
-      if (!selectedProjectId) return;
+      if (!selectedProjectId) {
+        console.warn("プロジェクトが選択されていません");
+        return;
+      }
       setLoadingBlocks(true);
       try {
+        console.log("選択されたプロジェクトID:", selectedProjectId);
+  
+        // ブロックデータの取得
         const blocksData = await fetchBlocks(selectedProjectId);
+        console.log("取得したブロックデータ:", blocksData);
         setBlocks(blocksData);
-
-        const iconsDataPromises = blocksData.map((block) =>
-          fetchIcons(block.id).then((icons) => ({ blockId: block.id, icons }))
-        );
+  
+        // 各ブロックのアイコンデータの取得
+        const iconsDataPromises = blocksData.map((block) => {
+          console.log("ブロックID:", block.id); // 各ブロックIDを出力
+          return fetchIcons(block.id)
+            .then((icons) => {
+              console.log(`ブロック ${block.id} に紐づくアイコンデータ:`, icons);
+              return { blockId: block.id, icons };
+            })
+            .catch((error) => {
+              console.warn(`ブロック ${block.id} のアイコン取得中にエラーが発生しました:`, error);
+              return { blockId: block.id, icons: [] }; // エラーが発生した場合は空配列を返す
+            });
+        });
+  
         const iconsDataResults = await Promise.all(iconsDataPromises);
-
+        console.log("取得した全アイコンデータ:", iconsDataResults);
+  
+        // アイコンデータをブロックIDごとにマッピング
         const newBlockIconsMap = {};
         iconsDataResults.forEach(({ blockId, icons }) => {
           newBlockIconsMap[blockId] = icons;
         });
+        console.log("マッピングされたアイコンデータ:", newBlockIconsMap);
         setBlockIconsMap(newBlockIconsMap);
       } catch (err) {
         console.error("データの取得に失敗しました:", err);
@@ -59,6 +80,7 @@ const DashboardPage = () => {
     };
     fetchProjectData();
   }, [selectedProjectId]);
+  
 
   if (loading) {
     return (
