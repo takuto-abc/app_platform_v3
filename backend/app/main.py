@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
+from sqlalchemy import desc
 from app.database import engine, SessionLocal, Base
 from app.models import Post, Project, Block, Icon
 from app.schemas import (
@@ -194,3 +196,19 @@ def validate_icon(name: str, db: Session = Depends(get_db)):
     if not icons:
         raise HTTPException(status_code=404, detail="No icons found")
     return icons
+
+
+@app.get("/analytics/icon-usage", response_model=list[dict])
+def get_icon_usage(db: Session = Depends(get_db)):
+    usage_data = (
+        db.query(Icon.name, Icon.image_url, func.count(Icon.id).label("usage_count"))
+        .filter(Icon.is_deleted == False)
+        .group_by(Icon.name, Icon.image_url)
+        .order_by(desc("usage_count"))
+        .all()
+    )
+    result = [
+        {"name": row[0], "image_url": row[1], "usage_count": row[2]}
+        for row in usage_data
+    ]
+    return result

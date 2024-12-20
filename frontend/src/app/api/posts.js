@@ -213,3 +213,17 @@ export const validateIcon = async (iconName) => {
     throw error;
   }
 };
+
+/**
+ * アイコン使用回数のランキングを取得する関数
+ * @returns {Promise<Array>} アイコンのランキングデータ
+ */
+export const fetchIconUsageRanking = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/analytics/icon-usage`);
+    return response.data;
+  } catch (error) {
+    console.error("アイコン使用ランキングの取得に失敗しました:", error);
+    throw error;
+  }
+};

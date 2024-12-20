@@ -18,6 +18,7 @@ import { fetchBlocks, fetchIcons } from "../api/posts";
 import useFetchData from "../api/useFetchPosts";
 import { CloseIcon, ChevronRightIcon } from "@chakra-ui/icons";
 
+
 const DashboardPage = () => {
   const { data: projects, loading, error } = useFetchData("projects");
   const [selectedProjectId, setSelectedProjectId] = useState(null);
@@ -27,6 +28,7 @@ const DashboardPage = () => {
   const [selectedIcon, setSelectedIcon] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  
   useEffect(() => {
     if (projects.length > 0 && selectedProjectId === null) {
       setSelectedProjectId(projects[0].id);

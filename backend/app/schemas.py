@@ -27,6 +27,7 @@ class IconCreate(BaseModel):
 
 class IconRead(IconBase):
     id: int
+    image_url: str
     block_id: int
 
     class Config:
