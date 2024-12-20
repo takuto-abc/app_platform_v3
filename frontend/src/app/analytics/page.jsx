@@ -208,6 +208,7 @@ const AnalyticsPage = () => {
       </Box>
 
       {/* アイコンリスト表示 */}
+      {/* 使用されているアイコンも絞り込みに応じて変更 */}
       <Heading as="h2" size="md" mb={4}>使用されているアイコン</Heading>
       <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} spacing={4}>
         {filteredData.map((icon) => (
