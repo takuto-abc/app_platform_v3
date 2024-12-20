@@ -122,9 +122,11 @@ export const fetchBlocks = async (projectId) => {
  */
 export const createBlock = async (projectId, block) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/projects/${projectId}/blocks`, block, {
-      headers: { "Content-Type": "application/json" },
-    });
+    const response = await axios.post(
+      `${API_BASE_URL}/projects/${projectId}/blocks`,
+      block,
+      { headers: { "Content-Type": "application/json" } }
+    );
     return response.data;
   } catch (error) {
     console.error(`プロジェクト ${projectId} にブロックを追加するのに失敗しました:`, error);

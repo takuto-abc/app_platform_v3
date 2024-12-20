@@ -287,6 +287,46 @@ const handleDeleteProject = async () => {
 };
 
 
+// block
+
+const handleCreateBlock = async () => {
+  if (!newBlockName.trim()) {
+    toast({
+      title: "入力エラー",
+      description: "ブロック名を入力してください。",
+      status: "error",
+      duration: 3000,
+      isClosable: true,
+    });
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+    const newBlock = await createBlock(selectedProject.id, { tag_name: newBlockName });
+    setBlocks((prevBlocks) => [...prevBlocks, newBlock]); // ローカル状態を更新
+
+    toast({
+      title: "ブロックが作成されました。",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+    setNewBlockName(""); // 入力フィールドをリセット
+  } catch (error) {
+    console.error("ブロック作成に失敗しました:", error);
+    toast({
+      title: "作成に失敗しました。",
+      description: "もう一度お試しください。",
+      status: "error",
+      duration: 5000,
+      isClosable: true,
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
 
 // Icon
@@ -655,19 +695,24 @@ const handleDeleteProject = async () => {
               </Box>
             ))}
           </SimpleGrid>
-
-            {/* <FormControl mt={4}>
-                  <Heading as="h4" size="sm" mb={4}>
-                    ブロックの追加
-                  </Heading>              <Input
-                placeholder="例）進捗管理"
-                value={newBlockName}
-                onChange={(e) => setNewBlockName(e.target.value)}
-              />
-              <Button colorScheme="teal" mt={2} onClick={handleCreateBlock}>
-                タグを追加
-              </Button>
-            </FormControl> */}
+          <FormControl mt={8}>
+            <Heading as="h4" size="sm" mb={4}>
+              新しいブロックの追加
+            </Heading>
+            <Input
+              placeholder="例）進捗管理"
+              value={newBlockName}
+              onChange={(e) => setNewBlockName(e.target.value)}
+            />
+            <Button
+              colorScheme="teal"
+              mt={2}
+              isLoading={isSubmitting} // ローディング状態を反映
+              onClick={handleCreateBlock}
+            >
+              ブロックを追加
+            </Button>
+          </FormControl>
           </Box>
         )}
       </VStack>
