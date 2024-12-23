@@ -2,6 +2,10 @@ import axios from "axios";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 
+
+// Project ------------------------------------------------------------------------
+
+
 /**
  * プロジェクトデータを取得する関数
  * @returns {Promise<Array>} プロジェクトの配列
@@ -99,6 +103,10 @@ export const deleteProject = async (projectId) => {
 };
 
 
+// Block ------------------------------------------------------------------------
+
+
+
 /**
  * 特定のプロジェクトに紐づくブロックを取得する関数
  * @param {number} projectId プロジェクトID
@@ -135,7 +143,34 @@ export const createBlock = async (projectId, block) => {
 };
 
 
-// Icon
+/**
+ * ブロックを削除する関数
+ * @param {number} projectId プロジェクトID
+ * @param {number} blockId ブロックID
+ * @returns {Promise<Object>} 削除されたブロックデータ
+ */
+export const deleteBlock = async (projectId, blockId) => {
+  try {
+    const response = await axios.delete(
+      `${API_BASE_URL}/projects/${projectId}/blocks/${blockId}`,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    console.log("削除されたブロックデータ:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("ブロック削除リクエストでエラーが発生しました:", {
+      message: error.message,
+      response: error.response?.data || "レスポンスなし",
+      status: error.response?.status || "ステータスなし",
+    });
+    throw error;
+  }
+};
+
+
+// Icon ------------------------------------------------------------------------
 
 
 /**

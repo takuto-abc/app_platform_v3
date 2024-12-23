@@ -47,6 +47,8 @@ import {
 const EditPage = () => {
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedBlock, setSelectedBlock] = useState(null); 
+  const [selectedIcon, setSelectedIcon] = useState(null); 
   const [blocks, setBlocks] = useState([]);
   const [blockIconsMap, setBlockIconsMap] = useState({});
   const [editingProjectName, setEditingProjectName] = useState("");
@@ -60,8 +62,16 @@ const EditPage = () => {
   const [newIconUrl, setNewIconUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [isAddingNewProject, setIsAddingNewProject] = useState(false); // フォームの開閉管理
-  const [selectedIcon, setSelectedIcon] = useState(null); // 選択されたアイコン
-  const { isOpen, onOpen, onClose } = useDisclosure(); // モーダルの開閉状態
+  const {
+    isOpen: isIconModalOpen,
+    onOpen: onIconModalOpen,
+    onClose: onIconModalClose,
+  } = useDisclosure();  const { isOpen, onOpen, onClose } = useDisclosure(); // モーダルの開閉状態
+  const {
+    isOpen: isBlockModalOpen,
+    onOpen: onBlockModalOpen,
+    onClose: onBlockModalClose,
+  } = useDisclosure();
   const [deletedIconIds, setDeletedIconIds] = useState([]);
   const [suggestedIcons, setSuggestedIcons] = useState([]); // アイコン候補
   const [suggestedIconsMap, setSuggestedIconsMap] = useState({});
@@ -144,7 +154,8 @@ const EditPage = () => {
 
 
  // CRUD
- // Project
+
+ // project -----------------------------------------------------------
  const handleCreateProject = async () => {
   setIsSubmitting(true);
   try {
@@ -195,8 +206,6 @@ const EditPage = () => {
   }
 };
 
-
-
 const handleUpdateProject = async () => {
   if (!selectedProject) {
     console.error("Error: No project selected.");
@@ -211,13 +220,22 @@ const handleUpdateProject = async () => {
 
   try {
     console.log("Updating project with ID:", selectedProject.id);
+
+    // 削除対象のブロックをAPIで削除
+    const blocksToDelete = blocks.filter((block) => block.toBeDeleted);
+    for (const block of blocksToDelete) {
+      await deleteBlock(selectedProject.id, block.id);
+    }
+
+    // 残存ブロックのデータで更新
+    const updatedBlocks = blocks.filter((block) => !block.toBeDeleted);
     const payload = {
       name: editingProjectName,
       description: editingProjectDescription,
-      tags: blocks.map((block) => block.tag_name), // ブロック名をタグとして送信
+      tags: updatedBlocks.map((block) => block.tag_name), // 残存ブロックのタグを送信
     };
-    console.log("Update Payload:", payload);
 
+    console.log("Update Payload:", payload);
     const updatedProject = await updateProject(selectedProject.id, payload);
 
     console.log("更新されたプロジェクト:", updatedProject);
@@ -230,11 +248,8 @@ const handleUpdateProject = async () => {
     );
     setSelectedProject(updatedProject);
 
-    // 更新完了のアラートを表示
     alert("更新が完了しました。");
-
-    // `/edit` に遷移
-    window.location.href = "/edit";
+    window.location.href = "/edit"; // 更新後にリロード
   } catch (error) {
     console.error("APIエラー詳細:", {
       message: error.message,
@@ -243,6 +258,7 @@ const handleUpdateProject = async () => {
     });
   }
 };
+
 
 
 const handleDeleteProject = async () => {
@@ -287,7 +303,7 @@ const handleDeleteProject = async () => {
 };
 
 
-// block
+// block --------------------------------------------------------
 
 const handleCreateBlock = async () => {
   if (!newBlockName.trim()) {
@@ -328,8 +344,38 @@ const handleCreateBlock = async () => {
 };
 
 
+const handleDeleteBlock = (blockId) => {
+  if (!blockId) {
+    console.error("無効なブロックID:", blockId);
+    return;
+  }
 
-// Icon
+  // 削除対象ブロックを選択
+  const blockToDelete = blocks.find((block) => block.id === blockId);
+  if (!blockToDelete) {
+    console.error("ブロックが見つかりません:", blockId);
+    return;
+  }
+
+  // 選択したブロックを状態に設定しモーダルを開く
+  setSelectedBlock(blockToDelete);
+  onBlockModalOpen();
+};
+
+// モーダル内の「削除する」ボタンの動作
+const confirmBlockDelete = (blockId) => {
+  setBlocks((prevBlocks) =>
+    prevBlocks.map((block) =>
+      block.id === blockId ? { ...block, toBeDeleted: true } : block
+    )
+  );
+  onBlockModalClose(); // モーダルを閉じる
+};
+
+
+
+
+// Icon ---------------------------------------------------------
   const handleCreateIcon = async (blockId, selectedIcon) => {
     try {
       const newIcon = await createIcon(blockId, {
@@ -379,7 +425,7 @@ const handleCreateBlock = async () => {
       });
   
       console.log(`アイコン (ID: ${iconId}) が正常に削除されました。`);
-      onClose();
+      onIconModalClose(); // モーダルを閉じる
     } catch (error) {
       console.error("アイコン削除処理でエラーが発生しました:", {
         message: error.message,
@@ -389,11 +435,18 @@ const handleCreateBlock = async () => {
   };
   
   
+  // Modal --------------------------------------------------------------
+  
   const handleIconClick = (icon) => {
-    setSelectedIcon(icon); // 選択されたアイコンを設定
-    onOpen(); // モーダルを開く
+    setSelectedIcon(icon); 
+    onIconModalOpen(); 
   };
 
+  const handleBlockDeleteClick = (block) => {
+    setSelectedBlock(block); 
+    onBlockModalOpen(); 
+  };
+  
 
   const handleTagChange = (id, value) => {
     setNewTags((prevTags) =>
@@ -483,9 +536,6 @@ const handleCreateBlock = async () => {
               cursor={isAddingNewProject ? "not-allowed" : "pointer"} // 新規作成中はカーソルを変更
               bg={selectedProject?.id === project.id ? "teal.100" : "white"}
               p={2}
-              border="1px solid"
-              borderColor="green.600" 
-              borderRadius="md"
               onClick={() => {
                 if (isAddingNewProject) {
                   // 新規プロジェクト作成中は編集できない
@@ -604,7 +654,7 @@ const handleCreateBlock = async () => {
                 colorScheme="red"
                 onClick={handleDeleteProject} // 削除処理を呼び出す
               >
-                プロジェクトを削除
+                プロジェクト削除
               </Button>
             </Flex>
             <FormControl mb={2}>
@@ -626,11 +676,27 @@ const handleCreateBlock = async () => {
               ブロック編集
             </Heading>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-            {blocks.map((block) => (
+            {blocks
+              .filter((block) => !block.toBeDeleted) // 削除フラグが立っているブロックは非表示
+              .map((block) => (
               <Box key={block.id} p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
-                <Heading as="h4" size="sm" mb={4}>
-                  {block.tag_name}
-                </Heading>
+                <Flex justifyContent="space-between" alignItems="center">
+                  <Heading as="h4" size="sm">
+                    {block.tag_name}
+                  </Heading>
+                  <Button
+                    colorScheme="red"
+                    size="sm"
+                    onClick={() => {
+                      if (selectedBlock && selectedBlock.id) {
+                        handleDeleteBlock(selectedBlock.id, selectedProject.id);
+                      } else {
+                        console.error("削除対象のブロックが選択されていません。");
+                      }
+                    }}                    >
+                    ブロック削除
+                  </Button>
+                </Flex>
                 <SimpleGrid columns={2} spacing={2}>
                   {blockIconsMap[block.id]?.map((icon) => (
                     <Box
@@ -745,27 +811,60 @@ const handleCreateBlock = async () => {
         </Flex>
      )}
 
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isIconModalOpen} onClose={onIconModalClose}>
         <ModalOverlay />
-        <ModalContent mt="100px">
+        <ModalContent>
           <ModalHeader>アイコン削除確認</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text>{selectedIcon?.name} を削除しますか？</Text>
+            <Text>{selectedIcon?.name || "アイコン"} を削除しますか？</Text>
           </ModalBody>
           <ModalFooter>
-          <Button
-            colorScheme="red"
-            mr={3}
-            onClick={() => handleDeleteIcon(selectedIcon?.id, selectedIcon?.block_id)}
-          >
-            削除
-          </Button>
-
-            <Button variant="ghost" onClick={onClose}>キャンセル</Button>
+            <Button
+              colorScheme="red"
+              mr={3}
+              onClick={() => {
+                if (selectedIcon) {
+                  handleDeleteIcon(selectedIcon.id, selectedIcon.block_id);
+                }
+              }}
+            >
+              削除
+            </Button>
+            <Button variant="ghost" onClick={onIconModalClose}>
+              キャンセル
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+
+      <Modal isOpen={isBlockModalOpen} onClose={onBlockModalClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>ブロック削除確認</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>{selectedBlock?.tag_name || "ブロック"} を削除しますか？</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              colorScheme="red"
+              mr={3}
+              onClick={() => confirmBlockDelete(selectedBlock.id)}
+            >
+              削除する
+            </Button>
+            <Button variant="ghost" onClick={onBlockModalClose}>
+              キャンセル
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+
+   
+
     </Flex>
   );
 };
