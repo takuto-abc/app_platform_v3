@@ -39,9 +39,10 @@ import {
   updateIcon,
   updateProject,
   createProject,
-  deleteIcon,
-  validateIcon,
   deleteProject,
+  deleteIcon,
+  deleteBlock,
+  validateIcon,
 } from "../api/posts";
 
 const EditPage = () => {
@@ -206,6 +207,7 @@ const EditPage = () => {
   }
 };
 
+
 const handleUpdateProject = async () => {
   if (!selectedProject) {
     console.error("Error: No project selected.");
@@ -219,23 +221,23 @@ const handleUpdateProject = async () => {
   }
 
   try {
-    console.log("Updating project with ID:", selectedProject.id);
-
     // 削除対象のブロックをAPIで削除
     const blocksToDelete = blocks.filter((block) => block.toBeDeleted);
     for (const block of blocksToDelete) {
       await deleteBlock(selectedProject.id, block.id);
-    }
+    };
 
     // 残存ブロックのデータで更新
-    const updatedBlocks = blocks.filter((block) => !block.toBeDeleted);
+    const updatedBlocks = await fetchBlocks(selectedProject.id);
+    setBlocks(updatedBlocks);
     const payload = {
       name: editingProjectName,
       description: editingProjectDescription,
       tags: updatedBlocks.map((block) => block.tag_name), // 残存ブロックのタグを送信
     };
 
-    console.log("Update Payload:", payload);
+
+    // プロジェクト情報の更新API呼び出し
     const updatedProject = await updateProject(selectedProject.id, payload);
 
     console.log("更新されたプロジェクト:", updatedProject);
@@ -248,13 +250,32 @@ const handleUpdateProject = async () => {
     );
     setSelectedProject(updatedProject);
 
-    alert("更新が完了しました。");
-    window.location.href = "/edit"; // 更新後にリロード
+    // 成功通知を表示
+    toast({
+      title: "プロジェクトが更新されました。",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+
+    // 更新完了後に /edit へ遷移
+    setTimeout(() => {
+      window.location.href = "/edit";
+    }, 3000);
   } catch (error) {
     console.error("APIエラー詳細:", {
       message: error.message,
       response: error.response?.data,
       status: error.response?.status,
+    });
+
+    // エラートースト表示
+    toast({
+      title: "更新に失敗しました。",
+      description: "もう一度お試しください。",
+      status: "error",
+      duration: 5000,
+      isClosable: true,
     });
   }
 };
@@ -344,33 +365,42 @@ const handleCreateBlock = async () => {
 };
 
 
-const handleDeleteBlock = (blockId) => {
-  if (!blockId) {
-    console.error("無効なブロックID:", blockId);
+// 「削除」ボタンからアクセス
+const handleDeleteBlock = (block) => {
+  if (!block) {
+    console.error("削除対象のブロックが選択されていません。");
     return;
   }
+  setSelectedBlock(block); 
+  onBlockModalOpen(); 
+};
 
-  // 削除対象ブロックを選択
-  const blockToDelete = blocks.find((block) => block.id === blockId);
-  if (!blockToDelete) {
-    console.error("ブロックが見つかりません:", blockId);
-    return;
+
+// 画面から削除
+const confirmBlockDelete = async (blockId) => {
+  try {
+    await deleteBlock(selectedProject.id, blockId); // APIリクエスト
+    setBlocks((prevBlocks) => prevBlocks.filter((block) => block.id !== blockId)); // 状態更新
+    onBlockModalClose(); // モーダルを閉じる
+    toast({
+      title: "ブロックが削除されました。",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+  } catch (error) {
+    console.error("ブロック削除に失敗しました:", error);
+    toast({
+      title: "ブロック削除に失敗しました。",
+      description: "もう一度お試しください。",
+      status: "error",
+      duration: 5000,
+      isClosable: true,
+    });
   }
-
-  // 選択したブロックを状態に設定しモーダルを開く
-  setSelectedBlock(blockToDelete);
-  onBlockModalOpen();
 };
 
-// モーダル内の「削除する」ボタンの動作
-const confirmBlockDelete = (blockId) => {
-  setBlocks((prevBlocks) =>
-    prevBlocks.map((block) =>
-      block.id === blockId ? { ...block, toBeDeleted: true } : block
-    )
-  );
-  onBlockModalClose(); // モーダルを閉じる
-};
+
 
 
 
@@ -442,11 +472,6 @@ const confirmBlockDelete = (blockId) => {
     onIconModalOpen(); 
   };
 
-  const handleBlockDeleteClick = (block) => {
-    setSelectedBlock(block); 
-    onBlockModalOpen(); 
-  };
-  
 
   const handleTagChange = (id, value) => {
     setNewTags((prevTags) =>
@@ -676,9 +701,7 @@ const confirmBlockDelete = (blockId) => {
               ブロック編集
             </Heading>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-            {blocks
-              .filter((block) => !block.toBeDeleted) // 削除フラグが立っているブロックは非表示
-              .map((block) => (
+            {blocks.map((block) => (
               <Box key={block.id} p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
                 <Flex justifyContent="space-between" alignItems="center">
                   <Heading as="h4" size="sm">
@@ -687,13 +710,8 @@ const confirmBlockDelete = (blockId) => {
                   <Button
                     colorScheme="red"
                     size="sm"
-                    onClick={() => {
-                      if (selectedBlock && selectedBlock.id) {
-                        handleDeleteBlock(selectedBlock.id, selectedProject.id);
-                      } else {
-                        console.error("削除対象のブロックが選択されていません。");
-                      }
-                    }}                    >
+                    onClick={() => handleDeleteBlock(block)} // 選択したブロックを削除モーダルに渡す
+                  >
                     ブロック削除
                   </Button>
                 </Flex>
@@ -838,10 +856,13 @@ const confirmBlockDelete = (blockId) => {
         </ModalContent>
       </Modal>
 
-
       <Modal isOpen={isBlockModalOpen} onClose={onBlockModalClose}>
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent
+          position="relative"
+          marginTop="10vh" // 画面上部からの距離を設定
+          maxWidth="500px" // 必要に応じて幅を調整
+        >
           <ModalHeader>ブロック削除確認</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -850,8 +871,13 @@ const confirmBlockDelete = (blockId) => {
           <ModalFooter>
             <Button
               colorScheme="red"
-              mr={3}
-              onClick={() => confirmBlockDelete(selectedBlock.id)}
+              onClick={() => {
+                if (selectedBlock?.id) {
+                  confirmBlockDelete(selectedBlock.id);
+                } else {
+                  console.error("削除対象のブロックが選択されていません。");
+                }
+              }}
             >
               削除する
             </Button>
@@ -861,10 +887,7 @@ const confirmBlockDelete = (blockId) => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
-
-   
-
+      
     </Flex>
   );
 };

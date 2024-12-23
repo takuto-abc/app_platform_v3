@@ -56,7 +56,8 @@ def get_db():
 #     return new_post
 
 
-# /projects エンドポイント
+# /projects エンドポイント -----------------------------------------------------------------------------------------
+
 @app.get("/projects", response_model=list[ProjectRead])
 def read_projects(db: Session = Depends(get_db)):
     return db.query(Project).all()
@@ -139,7 +140,8 @@ def delete_project(project_id: int, db: Session = Depends(get_db)):
 
 
 
-# /blocks エンドポイント
+# /blocks エンドポイント -----------------------------------------------------------------------------------------
+
 @app.get("/projects/{project_id}/blocks", response_model=list[BlockRead])
 def read_blocks(project_id: int, db: Session = Depends(get_db)):
     blocks = db.query(Block).filter(Block.project_id == project_id).all()
@@ -157,7 +159,22 @@ def create_block(project_id: int, block: BlockCreate, db: Session = Depends(get_
     return new_block
 
 
-# /icons エンドポイント
+@app.delete("/projects/{project_id}/blocks/{block_id}", response_model=BlockRead)
+def delete_block(project_id: int, block_id: int, db: Session = Depends(get_db)):
+    block = db.query(Block).filter(Block.id == block_id, Block.project_id == project_id).first()
+    if not block:
+        raise HTTPException(status_code=404, detail="Block not found")
+    
+    # ブロックを削除
+    db.delete(block)
+    db.commit()
+    return block
+
+
+
+
+# /icons エンドポイント -----------------------------------------------------------------------------------------
+
 # 論理削除されていないものだけを取得（フラグ=False）
 @app.get("/blocks/{block_id}/icons", response_model=list[IconRead])
 def read_icons(block_id: int, db: Session = Depends(get_db)):

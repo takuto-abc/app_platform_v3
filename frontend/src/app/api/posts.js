@@ -145,7 +145,6 @@ export const createBlock = async (projectId, block) => {
 
 /**
  * ブロックを削除する関数
- * @param {number} projectId プロジェクトID
  * @param {number} blockId ブロックID
  * @returns {Promise<Object>} 削除されたブロックデータ
  */
@@ -153,21 +152,17 @@ export const deleteBlock = async (projectId, blockId) => {
   try {
     const response = await axios.delete(
       `${API_BASE_URL}/projects/${projectId}/blocks/${blockId}`,
-      {
-        headers: { "Content-Type": "application/json" },
-      }
+      { headers: { "Content-Type": "application/json" } }
     );
     console.log("削除されたブロックデータ:", response.data);
     return response.data;
   } catch (error) {
-    console.error("ブロック削除リクエストでエラーが発生しました:", {
-      message: error.message,
-      response: error.response?.data || "レスポンスなし",
-      status: error.response?.status || "ステータスなし",
-    });
+    console.error("ブロック削除リクエストでエラーが発生しました:", error);
     throw error;
   }
 };
+
+
 
 
 // Icon ------------------------------------------------------------------------
