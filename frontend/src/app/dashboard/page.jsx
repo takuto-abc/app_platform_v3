@@ -114,16 +114,6 @@ const NoteLikePage = () => {
         </Box>
       </Flex>
 
-      {/* デバッグ情報 */}
-      <Box p={4} bg="gray.800" color="white" borderRadius="md" m={6}>
-        <Heading size="md" mb={2}>
-          デバッグ情報
-        </Heading>
-        <Text fontSize="sm" whiteSpace="pre-wrap">
-          {debugInfo}
-        </Text>
-      </Box>
-
       {/* モーダル */}
       <Modal isOpen={isModalOpen} onClose={closeModal}>
         <ModalOverlay />
