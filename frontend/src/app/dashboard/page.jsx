@@ -73,8 +73,16 @@ const NoteLikePage = () => {
         <Heading size="lg" color="white">
           人気のテンプレート
         </Heading>
+        <Button
+          colorScheme="teal"
+          size="md"
+          onClick={() => {
+            window.location.href = "/analytics";
+          }}
+        >
+          ランキング
+        </Button>
       </Flex>
-
       <Flex flex={1}>
         {/* メインコンテンツ */}
         <Box flex={1} p={6}>
