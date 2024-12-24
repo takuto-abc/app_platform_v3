@@ -22,7 +22,7 @@ import {
 import NextLink from "next/link";
 import { fetchBlocks, fetchIcons, postProject, fetchProjects } from "../api/posts";
 import useFetchData from "../api/useFetchPosts";
-import { CloseIcon, ChevronRightIcon } from "@chakra-ui/icons";
+import { CloseIcon, ChevronRightIcon, ChevronLeftIcon, IconButton } from "@chakra-ui/icons";
 
 
 const DashboardPage = () => {
@@ -162,7 +162,7 @@ const DashboardPage = () => {
                 p={0}
                 minWidth="32px"
               >
-                <CloseIcon boxSize="0.7em" />
+                <ChevronLeftIcon boxSize="1.5em"/>
               </Button>
             </Flex>
 
@@ -196,6 +196,7 @@ const DashboardPage = () => {
         bg="white"
         borderLeft="1px solid #e2e8f0"
         overflowY="auto"
+        mt={8} 
       >
         {selectedProject ? (
           <VStack align="start" spacing={4}>
@@ -300,25 +301,20 @@ const DashboardPage = () => {
       {/* サイドバーが閉じているときのみ表示する開くボタン（左上、透過背景、太い矢印） */}
       {!isSidebarOpen && (
         <Box position="absolute" top="0" left="0" zIndex="10">
-          <Button
-            variant="ghost"
+          <IconButton
+            icon={<ChevronRightIcon boxSize="2em" />} // アイコンを大きく
+            aria-label="Open Sidebar" // アクセシビリティ用
             onClick={() => setIsSidebarOpen(true)}
-            bg="transparent"
-            color="black"
-            borderRadius="0"
-            _hover={{ bg: "gray.200" }}
-            width="32px"
-            height="32px"
-            p={0}
-            minWidth="32px"
-            fontSize="3xl"      // アイコンを大きく
-            fontWeight="extrabold"   // 太く
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <ChevronRightIcon boxSize="1em" />
-          </Button>
+            variant="ghost"
+            colorScheme="gray"
+            size="mg" // ボタン全体のサイズを大きく
+            borderRadius="md" // 少し丸みを付ける
+            _hover={{ bg: "gray.200" }} // ホバー時の背景色
+            width="40px" // ボタンの幅を指定
+            height="40px" // ボタンの高さを指定
+            mt={2}
+            ml={3}
+          />
         </Box>
       )}
       <Box position="absolute" bottom="20px" right="20px" zIndex="10">
