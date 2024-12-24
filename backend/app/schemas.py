@@ -56,6 +56,7 @@ class BlockRead(BlockBase):
 class ProjectBase(BaseModel):
     name: str
     description: Optional[str] = None
+    is_posted: Optional[bool] = None
 
 
 class ProjectCreate(BaseModel):

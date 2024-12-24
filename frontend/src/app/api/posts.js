@@ -286,16 +286,15 @@ export const fetchIconUsageRanking = async () => {
 
 
 /**
- * 投稿済み（is_posted が True）のプロジェクトを取得する関数
- * @returns {Promise<Array>} 投稿済みプロジェクトの配列
+ * 投稿済みプロジェクトを取得する関数
+ * @returns {Promise<Array>} 投稿済みプロジェクトのリスト
  */
-
 export const fetchPostedProjects = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/projects/posted`);
+    const response = await axios.get(`${API_BASE_URL}/projects-posted`);
     return response.data;
   } catch (error) {
-    console.error("投稿済みプロジェクトの取得に失敗しました:", error);
+    console.error("投稿済みプロジェクトの取得に失敗しました:", error.response?.data || error.message);
     throw error;
   }
 };

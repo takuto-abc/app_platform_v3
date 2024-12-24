@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Flex,
@@ -17,11 +17,11 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-} from '@chakra-ui/react';
-import { fetchPostedProjects } from '../api/posts'; // is_postedがTrueのプロジェクトを取得する関数
-import NextLink from 'next/link';
+} from "@chakra-ui/react";
+import { fetchPostedProjects } from "../api/posts"; // 修正されたエンドポイントを使用
+import NextLink from "next/link";
 
-const DashboardPage = () => {
+const PostedPage = () => {
   const [projects, setProjects] = useState([]); // 投稿済みプロジェクトを格納
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false); // モーダルの開閉状態
@@ -91,12 +91,12 @@ const DashboardPage = () => {
                   overflow="hidden"
                   boxShadow="md"
                   transition="transform 0.2s"
-                  _hover={{ transform: 'scale(1.05)' }}
+                  _hover={{ transform: "scale(1.05)" }}
                   cursor="pointer"
                   onClick={() => openModal(project)} // モーダルを開く
                 >
                   <Image
-                    src={project.image || 'https://via.placeholder.com/300'}
+                    src={project.image || "https://via.placeholder.com/300"}
                     alt={project.name}
                     boxSize="200px"
                     objectFit="cover"
@@ -108,7 +108,7 @@ const DashboardPage = () => {
                       {project.name}
                     </Heading>
                     <Text fontSize="sm" color="gray.400" noOfLines={2}>
-                      {project.description || '説明はありません。'}
+                      {project.description || "説明はありません。"}
                     </Text>
                   </Box>
                 </Box>
@@ -124,14 +124,14 @@ const DashboardPage = () => {
       <Modal isOpen={isModalOpen} onClose={closeModal}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{selectedProject?.name || 'プロジェクト名未設定'}</ModalHeader>
+          <ModalHeader>{selectedProject?.name || "プロジェクト名未設定"}</ModalHeader>
           <ModalBody>
-            <Text>プロジェクトID: {selectedProject?.id || '不明'}</Text>
-            <Text>プロジェクト名: {selectedProject?.name || '不明'}</Text>
-            <Text>プロジェクト説明: {selectedProject?.description || '説明がありません。'}</Text>
+            <Text>プロジェクトID: {selectedProject?.id || "不明"}</Text>
+            <Text>プロジェクト名: {selectedProject?.name || "不明"}</Text>
+            <Text>プロジェクト説明: {selectedProject?.description || "説明がありません。"}</Text>
           </ModalBody>
           <ModalFooter>
-            <NextLink href={`/projects/${selectedProject?.id}`} passHref>
+            <NextLink href={`/dashboard/${selectedProject?.id}`} passHref>
               <Button colorScheme="teal" mr={3}>
                 詳細をみる
               </Button>
@@ -144,4 +144,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default PostedPage;

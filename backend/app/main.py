@@ -248,6 +248,6 @@ def get_icon_usage(db: Session = Depends(get_db)):
 
 
 # 投稿されているプロジェクトを取得
-@app.get("/projects/posted", response_model=list[ProjectRead])
+@app.get("/projects-posted", response_model=list[ProjectRead])
 def read_posted_projects(db: Session = Depends(get_db)):
     return db.query(Project).filter(Project.is_posted == True).all()

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; // useRouter をインポート
 import {
   Box,
   Flex,
@@ -28,7 +29,7 @@ import {
   ModalCloseButton,
   ModalFooter,
 } from "@chakra-ui/react";
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
+import { AddIcon, DeleteIcon, ChevronLeftIcon } from "@chakra-ui/icons";
 import {
   fetchProjects,
   fetchBlocks,
@@ -78,6 +79,7 @@ const EditPage = () => {
   const [suggestedIconsMap, setSuggestedIconsMap] = useState({});
   const toast = useToast(); // Chakra UI の Toast フック
   const [isSubmitting, setIsSubmitting] = useState(false); // ローディング制御
+  const router = useRouter(); // useRouter フックを使用
 
 
 
@@ -551,6 +553,17 @@ const confirmBlockDelete = async (blockId) => {
           width={{ base: "100%", md: "80%", lg: "60%" }} 
           mx="auto" 
         >
+          <Button
+            leftIcon={<ChevronLeftIcon />}
+            colorScheme="teal"
+            mb={6}
+            onClick={() => {
+              router.push("/mypage"); // 戻るページ
+              window.scrollTo(0, 0); // ページの一番上にスクロール
+            }}
+          >
+            戻る
+          </Button>
           <Heading as="h2" size="lg" mb={4}>
             プロジェクト一覧
           </Heading>
@@ -558,7 +571,7 @@ const confirmBlockDelete = async (blockId) => {
             {projects.map((project) => (
               <ListItem
               key={project.id}
-              cursor={isAddingNewProject ? "not-allowed" : "pointer"} // 新規作成中はカーソルを変更
+              cursor={isAddingNewProject ? "not-allowed" : "pointer"} 
               bg={selectedProject?.id === project.id ? "teal.100" : "white"}
               p={2}
               onClick={() => {

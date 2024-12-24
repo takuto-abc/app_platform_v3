@@ -11,11 +11,12 @@ import {
   Button,
 } from '@chakra-ui/react';
 import { fetchBlocks, fetchIcons } from '../../api/posts';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation'; // useRouter をインポート
 import { ChevronLeftIcon } from '@chakra-ui/icons';
 
 const ProjectDetailPage = () => {
   const params = useParams();
+  const router = useRouter(); // useRouter フックを使用
   const [blocks, setBlocks] = useState([]);
   const [blockIconsMap, setBlockIconsMap] = useState({});
   const [loading, setLoading] = useState(true);
@@ -73,6 +74,14 @@ const ProjectDetailPage = () => {
     <Flex height="100vh" bg="gray.900" overflow="hidden" position="relative">
       {/* メインコンテンツ */}
       <Box as="main" flex="1" p={6} bg="gray.900" overflowY="auto" color="white">
+        <Button
+          onClick={() => router.back()} // 戻るボタンのクリックで前のページに戻る
+          colorScheme="teal"
+          mb={4}
+          leftIcon={<ChevronLeftIcon />}
+        >
+          戻る
+        </Button>
         <Heading mb={4} color="white">
           プロジェクト詳細
         </Heading>
