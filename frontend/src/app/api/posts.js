@@ -103,6 +103,28 @@ export const deleteProject = async (projectId) => {
 };
 
 
+// 投稿作成用API関数
+export const postProject = async ({ id, is_posted }) => {
+  try {
+    // デバッグ: リクエスト内容を出力
+    console.log("APIリクエスト:", `${API_BASE_URL}/projects/${id}`, { is_posted });
+
+    const response = await axios.put(
+      `${API_BASE_URL}/projects/${id}`,
+      { is_posted }, // リクエストボディ
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("APIリクエストに失敗しました:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+
+
 // Block ------------------------------------------------------------------------
 
 
@@ -254,6 +276,22 @@ export const fetchIconUsageRanking = async () => {
     return response.data;
   } catch (error) {
     console.error("アイコン使用ランキングの取得に失敗しました:", error);
+    throw error;
+  }
+};
+
+
+/**
+ * 投稿済み（is_posted が True）のプロジェクトを取得する関数
+ * @returns {Promise<Array>} 投稿済みプロジェクトの配列
+ */
+
+export const fetchPostedProjects = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/projects/posted`);
+    return response.data;
+  } catch (error) {
+    console.error("投稿済みプロジェクトの取得に失敗しました:", error);
     throw error;
   }
 };

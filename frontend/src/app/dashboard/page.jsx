@@ -18,27 +18,26 @@ import {
   ModalBody,
   ModalFooter,
 } from '@chakra-ui/react';
-import { fetchProjects } from '../api/posts'; // API呼び出し関数をインポート
+import { fetchPostedProjects } from '../api/posts'; // is_postedがTrueのプロジェクトを取得する関数
 import NextLink from 'next/link';
 
-const NoteLikePage = () => {
-  const [projects, setProjects] = useState([]); // プロジェクトデータを格納
+const DashboardPage = () => {
+  const [projects, setProjects] = useState([]); // 投稿済みプロジェクトを格納
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false); // モーダルの開閉状態
   const [selectedProject, setSelectedProject] = useState(null); // 選択されたプロジェクト
-  const [debugInfo, setDebugInfo] = useState(""); // デバッグ情報を格納
 
   // データフェッチ用の useEffect
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const data = await fetchProjects(); // API からプロジェクトデータを取得
-        setProjects(data);
-        setDebugInfo("プロジェクトデータの取得に成功しました");
+        setLoading(true); // ローディング状態を開始
+        const data = await fetchPostedProjects(); // APIから投稿済みプロジェクトを取得
+        setProjects(data); // プロジェクトを状態に保存
       } catch (error) {
-        setDebugInfo("プロジェクトデータの取得に失敗しました");
+        console.error("投稿済みプロジェクトの取得に失敗しました:", error);
       } finally {
-        setLoading(false); // ローディング完了
+        setLoading(false); // ローディング状態を終了
       }
     };
 
@@ -47,8 +46,7 @@ const NoteLikePage = () => {
 
   // モーダルを開く関数
   const openModal = (project) => {
-    setDebugInfo(`openModalで受け取ったプロジェクト: ${JSON.stringify(project, null, 2)}`);
-    setSelectedProject(project); // 選択したプロジェクトをセット
+    setSelectedProject(project); // 選択したプロジェクトを保存
     setIsModalOpen(true); // モーダルを開く
   };
 
@@ -71,58 +69,58 @@ const NoteLikePage = () => {
       {/* ヘッダー */}
       <Flex justify="space-between" align="center" p={4} bg="gray.800">
         <Heading size="lg" color="white">
-          人気のテンプレート
+          投稿済みプロジェクト
         </Heading>
-        <Button
-          colorScheme="teal"
-          size="md"
-          onClick={() => {
-            window.location.href = "/analytics";
-          }}
-        >
-          ランキング
-        </Button>
+        <NextLink href="/create" passHref>
+          <Button colorScheme="teal" size="md">
+            新規作成
+          </Button>
+        </NextLink>
       </Flex>
-      <Flex flex={1}>
-        {/* メインコンテンツ */}
-        <Box flex={1} p={6}>
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6}>
-            {projects.map((project) => (
-              <Box
-                key={project.id}
-                bg="gray.800"
-                borderRadius="md"
-                overflow="hidden"
-                boxShadow="md"
-                transition="transform 0.2s"
-                _hover={{ transform: 'scale(1.05)' }}
-                cursor="pointer"
-                onClick={() => openModal(project)} // モーダルを開く
-              >
-                <Image
-                  src={project.image || 'https://via.placeholder.com/300'}
-                  alt={project.name}
-                  boxSize="200px"
-                  objectFit="cover"
-                  mx="auto"
-                  mt={4}
-                />
-                <Box p={4}>
-                  <Heading size="sm" noOfLines={1} mb={2}>
-                    {project.name}
-                  </Heading>
 
-                  <Text fontSize="sm" color="gray.400" noOfLines={2}>
-                    {project.description || '説明はありません。'}
-                  </Text>
+      {/* 投稿済みプロジェクトの表示 */}
+      <Flex flex={1}>
+        <Box flex={1} p={6}>
+          {projects.length > 0 ? (
+            <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6}>
+              {projects.map((project) => (
+                <Box
+                  key={project.id}
+                  bg="gray.800"
+                  borderRadius="md"
+                  overflow="hidden"
+                  boxShadow="md"
+                  transition="transform 0.2s"
+                  _hover={{ transform: 'scale(1.05)' }}
+                  cursor="pointer"
+                  onClick={() => openModal(project)} // モーダルを開く
+                >
+                  <Image
+                    src={project.image || 'https://via.placeholder.com/300'}
+                    alt={project.name}
+                    boxSize="200px"
+                    objectFit="cover"
+                    mx="auto"
+                    mt={4}
+                  />
+                  <Box p={4}>
+                    <Heading size="sm" noOfLines={1} mb={2}>
+                      {project.name}
+                    </Heading>
+                    <Text fontSize="sm" color="gray.400" noOfLines={2}>
+                      {project.description || '説明はありません。'}
+                    </Text>
+                  </Box>
                 </Box>
-              </Box>
-            ))}
-          </SimpleGrid>
+              ))}
+            </SimpleGrid>
+          ) : (
+            <Text>投稿済みプロジェクトはありません。</Text>
+          )}
         </Box>
       </Flex>
 
-      {/* モーダル */}
+      {/* プロジェクト詳細モーダル */}
       <Modal isOpen={isModalOpen} onClose={closeModal}>
         <ModalOverlay />
         <ModalContent>
@@ -133,7 +131,7 @@ const NoteLikePage = () => {
             <Text>プロジェクト説明: {selectedProject?.description || '説明がありません。'}</Text>
           </ModalBody>
           <ModalFooter>
-            <NextLink href={`/dashboard/${selectedProject?.id}`} passHref>
+            <NextLink href={`/projects/${selectedProject?.id}`} passHref>
               <Button colorScheme="teal" mr={3}>
                 詳細をみる
               </Button>
@@ -142,9 +140,8 @@ const NoteLikePage = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
     </Flex>
   );
 };
 
-export default NoteLikePage;
+export default DashboardPage;

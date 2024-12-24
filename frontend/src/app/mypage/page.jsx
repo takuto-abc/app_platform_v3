@@ -12,9 +12,15 @@ import {
   Text,
   Spinner,
   SimpleGrid,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { fetchBlocks, fetchIcons } from "../api/posts";
+import { fetchBlocks, fetchIcons, postProject } from "../api/posts";
 import useFetchData from "../api/useFetchPosts";
 import { CloseIcon, ChevronRightIcon } from "@chakra-ui/icons";
 
@@ -27,8 +33,9 @@ const DashboardPage = () => {
   const [blockIconsMap, setBlockIconsMap] = useState({});
   const [selectedIcon, setSelectedIcon] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false); // モーダルの開閉状態
 
-  
+
   useEffect(() => {
     if (projects.length > 0 && selectedProjectId === null) {
       setSelectedProjectId(projects[0].id);
@@ -83,6 +90,44 @@ const DashboardPage = () => {
     fetchProjectData();
   }, [selectedProjectId]);
   
+
+  // 投稿処理
+  const handlePostProject = async () => {
+    if (!selectedProject) {
+      alert("プロジェクトが選択されていません。");
+      return;
+    }
+  
+    try {
+      // デバッグ: リクエストデータを確認
+      console.log("投稿リクエストデータ:", {
+        id: selectedProject.id,
+        is_posted: true,
+      });
+  
+      // リクエスト送信
+      await postProject({
+        id: selectedProject.id, // プロジェクトID
+        is_posted: true, // 投稿済みフラグをTrueに設定
+      });
+  
+      alert("プロジェクトが投稿されました！");
+      closeModal(); // モーダルを閉じる
+      window.location.reload(); // ページをリロードして更新を反映
+    } catch (error) {
+      console.error("投稿リクエストに失敗しました:", error.response?.data || error.message);
+      alert("投稿に失敗しました。詳細はコンソールを確認してください。");
+    }
+  };
+  
+
+
+
+  // Modal
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+
 
   if (loading) {
     return (
@@ -290,14 +335,20 @@ const DashboardPage = () => {
           </Button>
         </Box>
       )}
-
-      {/* 編集ボタン */}
       <Box position="absolute" bottom="20px" right="20px" zIndex="10">
-        <NextLink href="/edit" passHref>
-          <Button colorScheme="teal" size="lg" borderRadius="md" boxShadow="lg">
-            編集
+        <Flex gap="4" align="center">
+          {/* 投稿ボタン */}
+          <Button colorScheme="blue" size="lg" borderRadius="md" boxShadow="lg" onClick={openModal}>
+            投稿する
           </Button>
-        </NextLink>
+
+          {/* 編集ボタン */}
+          <NextLink href="/edit" passHref>
+            <Button colorScheme="teal" size="lg" borderRadius="md" boxShadow="lg">
+              編集
+            </Button>
+          </NextLink>
+        </Flex>
       </Box>
 
       {/* 右サイドバー（詳細） */}
@@ -361,6 +412,33 @@ const DashboardPage = () => {
           </Box>
         </Box>
       )}
+
+    <Modal isOpen={isModalOpen} onClose={closeModal}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>投稿の確認</ModalHeader>
+        <ModalBody>
+          {/* プロジェクト名を動的に表示 */}
+          <Text fontSize="lg">
+            {selectedProject?.name
+              ? `「${selectedProject.name}のプロジェクト」を投稿しますか？`
+              : "プロジェクトが選択されていません。"}
+          </Text>
+        </ModalBody>
+        <ModalFooter>
+          {/* 投稿ボタン */}
+          <Button colorScheme="blue" onClick={handlePostProject}>
+            投稿する
+          </Button>
+          {/* キャンセルボタン */}
+          <Button ml={3} onClick={closeModal}>
+            キャンセル
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+
+
     </Flex>
   );
 };

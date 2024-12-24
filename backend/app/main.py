@@ -138,6 +138,18 @@ def delete_project(project_id: int, db: Session = Depends(get_db)):
     return project
 
 
+@app.post("/projects", response_model=ProjectRead)
+def post_project(project: ProjectCreate, db: Session = Depends(get_db)):
+    new_project = Project(
+        name=project.name,
+        description=project.description,
+        is_posted=project.is_posted,  # 投稿済みフラグを設定
+    )
+    db.add(new_project)
+    db.commit()
+    db.refresh(new_project)
+    return new_project
+
 
 
 # /blocks エンドポイント -----------------------------------------------------------------------------------------
@@ -206,7 +218,7 @@ def delete_icon(block_id: int, icon_id: int, db: Session = Depends(get_db)):
     return icon
 
 
-
+# アイコン検索
 @app.get("/icons/validate")
 def validate_icon(name: str, db: Session = Depends(get_db)):
     icons = db.query(Icon).filter(Icon.name.ilike(f"%{name}%")).all()
@@ -215,6 +227,7 @@ def validate_icon(name: str, db: Session = Depends(get_db)):
     return icons
 
 
+# 棒グラフ
 @app.get("/analytics/icon-usage", response_model=list[dict])
 def get_icon_usage(db: Session = Depends(get_db)):
     usage_data = (
@@ -229,3 +242,9 @@ def get_icon_usage(db: Session = Depends(get_db)):
         for row in usage_data
     ]
     return result
+
+
+# 投稿されているプロジェクトを取得
+@app.get("/projects/posted", response_model=list[ProjectRead])
+def read_posted_projects(db: Session = Depends(get_db)):
+    return db.query(Project).filter(Project.is_posted == True).all()
