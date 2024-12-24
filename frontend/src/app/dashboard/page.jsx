@@ -71,9 +71,9 @@ const PostedPage = () => {
         <Heading size="lg" color="white">
           投稿済みプロジェクト
         </Heading>
-        <NextLink href="/create" passHref>
+        <NextLink href="/analytics" passHref>
           <Button colorScheme="teal" size="md">
-            新規作成
+            ランキング
           </Button>
         </NextLink>
       </Flex>

@@ -433,7 +433,7 @@ const confirmBlockDelete = async (blockId) => {
       }));
       console.log("アイコンが追加されました:", newIcon);
     } catch (error) {
-      console.error("アイコンの作成に失敗しました:", error);
+      console.warn("アイコンの作成に失敗しました:", error);
     }
   };
 

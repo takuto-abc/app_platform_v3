@@ -1,7 +1,16 @@
 "use client"; // クライアントサイドコンポーネントとして設定
 
 import React, { useEffect, useState, useRef } from "react";
-import { Box, Heading, Text, SimpleGrid, Image, Select } from "@chakra-ui/react";
+import {
+  Box,
+  Heading,
+  Text,
+  SimpleGrid,
+  Image,
+  Select,
+  Button,
+} from "@chakra-ui/react";
+import { ChevronLeftIcon } from "@chakra-ui/icons";
 import { fetchIconUsageRanking } from "../api/posts";
 import { Bar } from "react-chartjs-2";
 import {
@@ -13,8 +22,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { useRouter } from "next/navigation"; 
 
-// Custom plugin to add icon images to x-axis labels
+
 const IconLabelPlugin = {
   id: "iconLabel",
   beforeInit: async (chart) => {
@@ -28,12 +38,14 @@ const IconLabelPlugin = {
       return new Promise((resolve) => {
         const img = new window.Image();
         img.crossOrigin = "anonymous";
-        
+
         const tryLoad = (url) => {
           img.onload = () => resolve(img);
           img.onerror = () => {
             if (url === src) {
-              const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(src)}`;
+              const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(
+                src
+              )}`;
               tryLoad(proxyUrl);
             } else {
               console.error(`Failed to load image: ${src}`);
@@ -51,7 +63,10 @@ const IconLabelPlugin = {
     chart.iconImages = loadedImages;
   },
   afterDraw: (chart) => {
-    const { ctx, scales: { x, y } } = chart;
+    const {
+      ctx,
+      scales: { x, y },
+    } = chart;
 
     if (!chart.iconImages || chart.iconImages.length === 0) return;
 
@@ -69,7 +84,7 @@ const IconLabelPlugin = {
         console.error(`Failed to draw image: ${error.message}`);
       }
     });
-  }
+  },
 };
 
 // Register the custom plugin along with other required scales and elements
@@ -87,8 +102,9 @@ const AnalyticsPage = () => {
   const [iconUsageData, setIconUsageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState("all"); // プルダウンで選択されたカテゴリー
-  const chartRef = useRef(null); // refを作成してBarコンポーネントに渡す
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const chartRef = useRef(null);
+  const router = useRouter(); // Next.jsのuseRouterを使用
 
   useEffect(() => {
     const fetchAndSetData = async () => {
@@ -107,21 +123,35 @@ const AnalyticsPage = () => {
     fetchAndSetData();
   }, []);
 
-  // フィルタリングされたデータを取得
   const filteredData = iconUsageData?.filter((icon) => {
     if (selectedCategory === "all") return true;
-    return icon.category === selectedCategory; // カテゴリーに一致するアイコンのみ表示
+    return icon.category === selectedCategory;
   });
 
   useEffect(() => {
     if (filteredData && chartRef.current) {
-      chartRef.current.chartInstance?.update(); // グラフを更新
+      chartRef.current.chartInstance?.update();
     }
   }, [filteredData]);
 
-  if (loading) return <Box textAlign="center" p={6}><Text>データを読み込んでいます...</Text></Box>;
-  if (error) return <Box textAlign="center" p={6}><Text color="red.500">{error}</Text></Box>;
-  if (!filteredData || filteredData.length === 0) return <Box textAlign="center" p={6}><Text>表示するデータがありません。</Text></Box>;
+  if (loading)
+    return (
+      <Box textAlign="center" p={6}>
+        <Text>データを読み込んでいます...</Text>
+      </Box>
+    );
+  if (error)
+    return (
+      <Box textAlign="center" p={6}>
+        <Text color="red.500">{error}</Text>
+      </Box>
+    );
+  if (!filteredData || filteredData.length === 0)
+    return (
+      <Box textAlign="center" p={6}>
+        <Text>表示するデータがありません。</Text>
+      </Box>
+    );
 
   const labels = filteredData.map((icon) => icon.name);
   const data = {
@@ -185,9 +215,22 @@ const AnalyticsPage = () => {
 
   return (
     <Box p={6}>
-      <Heading as="h1" size="lg" mb={4}>アイコン使用ランキング</Heading>
+      <Heading as="h1" size="lg" mb={4}>
+        アイコン使用ランキング
+      </Heading>
 
-      {/* プルダウンメニュー（カテゴリー選択） */}
+      {/* 戻るボタン */}
+      <Button
+        leftIcon={<ChevronLeftIcon />}
+        colorScheme="teal"
+        mb={6}
+        onClick={() => {
+          router.back(); 
+        }}
+      >
+        戻る
+      </Button>
+
       <Select
         value={selectedCategory}
         onChange={(e) => setSelectedCategory(e.target.value)}
@@ -195,21 +238,19 @@ const AnalyticsPage = () => {
         width="120px"
         height="30px"
       >
-        {/* ここにタグを取得し絞り込み */}
         <option value="all">すべて</option>
         <option value="category1">旅行</option>
         <option value="category2">就職活動</option>
         <option value="category3">投資</option>
       </Select>
 
-      {/* 棒グラフ表示 */}
       <Box width="100%" maxWidth="800px" mx="auto" mb={8} height="400px">
         <Bar ref={chartRef} data={data} options={options} />
       </Box>
 
-      {/* アイコンリスト表示 */}
-      {/* 使用されているアイコンも絞り込みに応じて変更 */}
-      <Heading as="h2" size="md" mb={4}>使用されているアイコン</Heading>
+      <Heading as="h2" size="md" mb={4}>
+        使用されているアイコン
+      </Heading>
       <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} spacing={4}>
         {filteredData.map((icon) => (
           <Box
@@ -227,10 +268,16 @@ const AnalyticsPage = () => {
               mx="auto"
               mb={2}
               objectFit="contain"
-              onError={() => console.error(`画像の読み込みに失敗しました: ${icon.image_url}`)}
+              onError={() =>
+                console.error(`画像の読み込みに失敗しました: ${icon.image_url}`)
+              }
             />
-            <Text fontSize="sm" fontWeight="bold">{icon.name}</Text>
-            <Text fontSize="xs" color="gray.500">使用回数: {icon.usage_count}</Text>
+            <Text fontSize="sm" fontWeight="bold">
+              {icon.name}
+            </Text>
+            <Text fontSize="xs" color="gray.500">
+              使用回数: {icon.usage_count}
+            </Text>
           </Box>
         ))}
       </SimpleGrid>
