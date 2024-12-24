@@ -20,13 +20,13 @@ import {
   ModalFooter,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { fetchBlocks, fetchIcons, postProject } from "../api/posts";
+import { fetchBlocks, fetchIcons, postProject, fetchProjects } from "../api/posts";
 import useFetchData from "../api/useFetchPosts";
 import { CloseIcon, ChevronRightIcon } from "@chakra-ui/icons";
 
 
 const DashboardPage = () => {
-  const { data: projects, loading, error } = useFetchData("projects");
+  const { data: projects, loading, error, refetch } = useFetchData("projects");
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [blocks, setBlocks] = useState([]);
   const [loadingBlocks, setLoadingBlocks] = useState(false);
@@ -34,6 +34,9 @@ const DashboardPage = () => {
   const [selectedIcon, setSelectedIcon] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false); // モーダルの開閉状態
+
+
+  const selectedProject = projects.find((project) => project.id === selectedProjectId);
 
 
   useEffect(() => {
@@ -49,37 +52,29 @@ const DashboardPage = () => {
         return;
       }
       setLoadingBlocks(true);
-      try {
-        console.log("選択されたプロジェクトID:", selectedProjectId);
-  
+      try {  
         // ブロックデータの取得
         const blocksData = await fetchBlocks(selectedProjectId);
-        console.log("取得したブロックデータ:", blocksData);
         setBlocks(blocksData);
   
         // 各ブロックのアイコンデータの取得
         const iconsDataPromises = blocksData.map((block) => {
-          console.log("ブロックID:", block.id); // 各ブロックIDを出力
           return fetchIcons(block.id)
             .then((icons) => {
-              console.log(`ブロック ${block.id} に紐づくアイコンデータ:`, icons);
               return { blockId: block.id, icons };
             })
             .catch((error) => {
-              console.warn(`ブロック ${block.id} のアイコン取得中にエラーが発生しました:`, error);
               return { blockId: block.id, icons: [] }; // エラーが発生した場合は空配列を返す
             });
         });
   
         const iconsDataResults = await Promise.all(iconsDataPromises);
-        console.log("取得した全アイコンデータ:", iconsDataResults);
   
         // アイコンデータをブロックIDごとにマッピング
         const newBlockIconsMap = {};
         iconsDataResults.forEach(({ blockId, icons }) => {
           newBlockIconsMap[blockId] = icons;
         });
-        console.log("マッピングされたアイコンデータ:", newBlockIconsMap);
         setBlockIconsMap(newBlockIconsMap);
       } catch (err) {
         console.error("データの取得に失敗しました:", err);
@@ -91,6 +86,7 @@ const DashboardPage = () => {
   }, [selectedProjectId]);
   
 
+
   // 投稿処理
   const handlePostProject = async () => {
     if (!selectedProject) {
@@ -99,26 +95,18 @@ const DashboardPage = () => {
     }
   
     try {
-      // デバッグ: リクエストデータを確認
-      console.log("投稿リクエストデータ:", {
-        id: selectedProject.id,
-        is_posted: true,
-      });
+      await postProject(selectedProject.id, true); // 投稿APIを呼び出し
   
-      // リクエスト送信
-      await postProject({
-        id: selectedProject.id, // プロジェクトID
-        is_posted: true, // 投稿済みフラグをTrueに設定
-      });
-  
-      alert("プロジェクトが投稿されました！");
-      closeModal(); // モーダルを閉じる
-      window.location.reload(); // ページをリロードして更新を反映
+      alert(`${selectedProject.name} が投稿されました！`);
+      setIsModalOpen(false); // モーダルを閉じる
+      refetch(); // プロジェクトリストを再取得して状態を更新
     } catch (error) {
-      console.error("投稿リクエストに失敗しました:", error.response?.data || error.message);
-      alert("投稿に失敗しました。詳細はコンソールを確認してください。");
+      console.error("投稿失敗:", error);
+      alert("投稿に失敗しました。もう一度お試しください。");
     }
   };
+  
+  
   
 
 
@@ -144,8 +132,6 @@ const DashboardPage = () => {
       </Flex>
     );
   }
-
-  const selectedProject = projects.find((project) => project.id === selectedProjectId);
 
   return (
     <Flex height="100vh" bg="gray.50" overflow="hidden" position="relative">
@@ -338,10 +324,9 @@ const DashboardPage = () => {
       <Box position="absolute" bottom="20px" right="20px" zIndex="10">
         <Flex gap="4" align="center">
           {/* 投稿ボタン */}
-          <Button colorScheme="blue" size="lg" borderRadius="md" boxShadow="lg" onClick={openModal}>
-            投稿する
-          </Button>
-
+            <Button colorScheme="blue" size="lg" onClick={() => setIsModalOpen(true)}>
+              投稿する
+            </Button>
           {/* 編集ボタン */}
           <NextLink href="/edit" passHref>
             <Button colorScheme="teal" size="lg" borderRadius="md" boxShadow="lg">
@@ -413,30 +398,23 @@ const DashboardPage = () => {
         </Box>
       )}
 
-    <Modal isOpen={isModalOpen} onClose={closeModal}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>投稿の確認</ModalHeader>
-        <ModalBody>
-          {/* プロジェクト名を動的に表示 */}
-          <Text fontSize="lg">
-            {selectedProject?.name
-              ? `「${selectedProject.name}のプロジェクト」を投稿しますか？`
-              : "プロジェクトが選択されていません。"}
-          </Text>
-        </ModalBody>
-        <ModalFooter>
-          {/* 投稿ボタン */}
-          <Button colorScheme="blue" onClick={handlePostProject}>
-            投稿する
-          </Button>
-          {/* キャンセルボタン */}
-          <Button ml={3} onClick={closeModal}>
-            キャンセル
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>投稿確認</ModalHeader>
+          <ModalBody>
+            <Text>{selectedProject?.name} を投稿しますか？</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" onClick={handlePostProject}>
+              投稿する
+            </Button>
+            <Button ml={3} onClick={() => setIsModalOpen(false)}>
+              キャンセル
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
 
     </Flex>

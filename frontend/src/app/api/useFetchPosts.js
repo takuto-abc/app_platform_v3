@@ -1,46 +1,49 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { fetchProjects, fetchBlocks, fetchIcons } from "./posts";
 
 /**
  * データ取得用カスタムフック
  * @param {"projects" | "blocks" | "icons"} type 取得するデータの種類
  * @param {number} [parentId] 親要素のID (プロジェクトIDやブロックID)
- * @returns {Object} データ、ローディング状態、エラーを返却
+ * @returns {Object} データ、ローディング状態、エラー、再取得関数を返却
  */
 const useFetchData = (type, parentId = null) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        let response;
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null); // エラー状態をリセット
 
-        if (type === "projects") {
-          response = await fetchProjects();
-        } else if (type === "blocks") {
-          if (!parentId) throw new Error("Parent ID is required for fetching blocks");
-          response = await fetchBlocks(parentId);
-        } else if (type === "icons") {
-          if (!parentId) throw new Error("Parent ID is required for fetching icons");
-          response = await fetchIcons(parentId);
-        } else {
-          throw new Error("Unsupported fetch type");
-        }
+    try {
+      let response;
 
-        setData(response);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
+      if (type === "projects") {
+        response = await fetchProjects();
+      } else if (type === "blocks") {
+        if (!parentId) throw new Error("Parent ID is required for fetching blocks");
+        response = await fetchBlocks(parentId);
+      } else if (type === "icons") {
+        if (!parentId) throw new Error("Parent ID is required for fetching icons");
+        response = await fetchIcons(parentId);
+      } else {
+        throw new Error("Unsupported fetch type");
       }
-    };
 
-    fetchData();
+      setData(response);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
   }, [type, parentId]);
 
-  return { data, loading, error };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
 };
 
 export default useFetchData;

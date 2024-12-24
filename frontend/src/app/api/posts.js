@@ -103,25 +103,29 @@ export const deleteProject = async (projectId) => {
 };
 
 
-// 投稿作成用API関数
-export const postProject = async ({ id, is_posted }) => {
+/**
+ * プロジェクトを投稿するAPI関数
+ * @param {number} projectId - 投稿するプロジェクトのID
+ * @returns {Promise<Object>} 更新されたプロジェクトデータ
+ */
+export const postProject = async (projectId) => {
   try {
-    // デバッグ: リクエスト内容を出力
-    console.log("APIリクエスト:", `${API_BASE_URL}/projects/${id}`, { is_posted });
-
+    // APIリクエスト送信
     const response = await axios.put(
-      `${API_BASE_URL}/projects/${id}`,
-      { is_posted }, // リクエストボディ
+      `${API_BASE_URL}/projects/${projectId}/post`, // 新しい専用エンドポイント
+      {}, // リクエストボディは不要
       {
         headers: { "Content-Type": "application/json" },
       }
     );
-    return response.data;
+    return response.data; // サーバーからのレスポンスデータを返す
   } catch (error) {
-    console.error("APIリクエストに失敗しました:", error.response?.data || error.message);
-    throw error;
+    console.error("プロジェクトの投稿に失敗しました:", error.response?.data || error.message);
+    throw error; // エラーをスローして呼び出し元で処理
   }
 };
+
+
 
 
 
