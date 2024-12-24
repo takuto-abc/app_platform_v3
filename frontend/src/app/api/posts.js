@@ -126,6 +126,27 @@ export const postProject = async (projectId) => {
 };
 
 
+/**
+ * プロジェクトの投稿を取り消す関数
+ * @param {number} projectId - 投稿解除するプロジェクトのID
+ * @returns {Promise<Object>} 更新されたプロジェクトデータ
+ */
+export const unpostProject = async (projectId) => {
+  try {
+    // APIリクエスト送信
+    const response = await axios.put(
+      `${API_BASE_URL}/projects/${projectId}/unpost`, // 新しい専用エンドポイント
+      {}, // リクエストボディは不要
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data; // サーバーからのレスポンスデータを返す
+  } catch (error) {
+    console.error("プロジェクトの投稿解除に失敗しました:", error.response?.data || error.message);
+    throw error; // エラーをスローして呼び出し元で処理
+  }
+};
 
 
 

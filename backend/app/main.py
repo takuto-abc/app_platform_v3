@@ -138,6 +138,7 @@ def delete_project(project_id: int, db: Session = Depends(get_db)):
     return project
 
 
+# 投稿する
 @app.put("/projects/{project_id}/post", response_model=ProjectRead)
 def post_project(project_id: int, db: Session = Depends(get_db)):
     # プロジェクトを取得
@@ -151,6 +152,20 @@ def post_project(project_id: int, db: Session = Depends(get_db)):
     db.refresh(existing_project)
     return existing_project
 
+
+# 投稿を取り消す
+@app.put("/projects/{project_id}/unpost", response_model=ProjectRead)
+def unpost_project(project_id: int, db: Session = Depends(get_db)):
+    # プロジェクトを取得
+    existing_project = db.query(Project).filter(Project.id == project_id).first()
+    if not existing_project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # 投稿状態を解除
+    existing_project.is_posted = False
+    db.commit()
+    db.refresh(existing_project)
+    return existing_project
 
 
 

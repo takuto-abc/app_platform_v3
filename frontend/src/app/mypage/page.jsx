@@ -20,7 +20,7 @@ import {
   ModalFooter,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { fetchBlocks, fetchIcons, postProject, fetchProjects } from "../api/posts";
+import { fetchBlocks, fetchIcons, postProject, fetchProjects, unpostProject } from "../api/posts";
 import useFetchData from "../api/useFetchPosts";
 import { CloseIcon, ChevronRightIcon, ChevronLeftIcon, IconButton } from "@chakra-ui/icons";
 
@@ -34,9 +34,11 @@ const DashboardPage = () => {
   const [selectedIcon, setSelectedIcon] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false); // モーダルの開閉状態
-
-
-  const selectedProject = projects.find((project) => project.id === selectedProjectId);
+  const [successMessage, setSuccessMessage] = useState(""); // 成功メッセージ
+  const [errorMessage, setErrorMessage] = useState(""); // エラーメッセージ
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const selectedProject = projects.find((project) => project.id === selectedProjectId) || null;
 
 
   useEffect(() => {
@@ -44,6 +46,7 @@ const DashboardPage = () => {
       setSelectedProjectId(projects[0].id);
     }
   }, [projects, selectedProjectId]);
+  
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -87,28 +90,33 @@ const DashboardPage = () => {
   
 
 
-  // 投稿処理
+  // 投稿/非投稿処理
   const handlePostProject = async () => {
-    if (!selectedProject) {
-      alert("プロジェクトが選択されていません。");
-      return;
-    }
+    const newIsPosted = !selectedProject.is_posted;
   
     try {
-      await postProject(selectedProject.id, true); // 投稿APIを呼び出し
+      if (newIsPosted) {
+        // 投稿する
+        await postProject(selectedProject.id);
+        setSuccessMessage(`${selectedProject.name} が投稿されました！`);
+      } else {
+        // 投稿を解除する
+        await unpostProject(selectedProject.id);
+        setSuccessMessage(`${selectedProject.name} の投稿が解除されました！`);
+      }
   
-      alert(`${selectedProject.name} が投稿されました！`);
-      setIsModalOpen(false); // モーダルを閉じる
+      setIsSuccessModalOpen(true); // 成功モーダルを開く
       refetch(); // プロジェクトリストを再取得して状態を更新
     } catch (error) {
-      console.error("投稿失敗:", error);
-      alert("投稿に失敗しました。もう一度お試しください。");
+      console.error("投稿/投稿解除失敗:", error);
+      setErrorMessage("投稿/投稿解除に失敗しました。もう一度お試しください。");
+      setIsErrorModalOpen(true); // エラーモーダルを開く
+    } finally {
+      setIsModalOpen(false); // モーダルを閉じる
     }
   };
   
   
-  
-
 
 
   // Modal
@@ -320,9 +328,19 @@ const DashboardPage = () => {
       <Box position="absolute" bottom="20px" right="20px" zIndex="10">
         <Flex gap="4" align="center">
           {/* 投稿ボタン */}
-            <Button colorScheme="blue" size="lg" onClick={() => setIsModalOpen(true)}>
-              投稿する
-            </Button>
+          <Button
+            colorScheme={selectedProject?.is_posted ? "red" : "blue"}
+            size="lg"
+            onClick={() => {
+              if (!selectedProject) {
+                alert("プロジェクトが選択されていません。");
+                return;
+              }
+              setIsModalOpen(true);
+            }}
+          >
+            {selectedProject?.is_posted ? "投稿を取り消す" : "投稿する"}
+          </Button>
           {/* 編集ボタン */}
           <NextLink href="/edit" passHref>
             <Button colorScheme="teal" size="lg" borderRadius="md" boxShadow="lg">
@@ -397,14 +415,31 @@ const DashboardPage = () => {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>投稿確認</ModalHeader>
+          <ModalHeader>
+            {selectedProject 
+              ? (selectedProject.is_posted ? "投稿を取り消す確認" : "投稿確認")
+              : "プロジェクトが選択されていません"}
+          </ModalHeader>
           <ModalBody>
-            <Text>{selectedProject?.name} を投稿しますか？</Text>
+            {selectedProject ? (
+              <Text>
+                {selectedProject.is_posted
+                  ? `${selectedProject.name} の投稿を取り消しますか？`
+                  : `${selectedProject.name} を投稿しますか？`}
+              </Text>
+            ) : (
+              <Text>プロジェクトが選択されていません。</Text>
+            )}
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" onClick={handlePostProject}>
-              投稿する
-            </Button>
+            {selectedProject && (
+              <Button
+                colorScheme={selectedProject.is_posted ? "red" : "blue"} // 投稿済みの場合は赤、それ以外は青
+                onClick={handlePostProject}
+              >
+                {selectedProject.is_posted ? "投稿を取り消す" : "投稿する"}
+              </Button>
+            )}
             <Button ml={3} onClick={() => setIsModalOpen(false)}>
               キャンセル
             </Button>
@@ -412,7 +447,38 @@ const DashboardPage = () => {
         </ModalContent>
       </Modal>
 
+      {/* 成功モーダル */}
+      <Modal isOpen={isSuccessModalOpen} onClose={() => setIsSuccessModalOpen(false)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>成功</ModalHeader>
+          <ModalBody>
+            <Text>{successMessage}</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="teal" onClick={() => setIsSuccessModalOpen(false)}>
+              閉じる
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
+      {/* エラーモーダル */}
+      <Modal isOpen={isErrorModalOpen} onClose={() => setIsErrorModalOpen(false)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>エラー</ModalHeader>
+          <ModalBody>
+            <Text>{errorMessage}</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="red" onClick={() => setIsErrorModalOpen(false)}>
+              閉じる
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      
     </Flex>
   );
 };
