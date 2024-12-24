@@ -246,54 +246,60 @@ const DashboardPage = () => {
                         gap={2}
                         flex="1"
                       >
-                        {blockIconsMap[block.id] &&
-                          blockIconsMap[block.id].slice(0, 4).map((icon) => (
+                      {blockIconsMap[block.id] &&
+                        blockIconsMap[block.id].slice(0, 4).map((icon) => (
+                          <Box
+                            key={icon.id}
+                            p={2}
+                            borderWidth="1px"
+                            borderRadius="md"
+                            boxShadow="sm"
+                            display="flex"
+                            flexDirection="column"
+                            alignItems="center"
+                            justifyContent="center"
+                            width="100%"
+                            height="100%"
+                            overflow="hidden"
+                            cursor="pointer"
+                            onClick={() => {
+                              if (selectedIcon?.id === icon.id) {
+                                setSelectedIcon(null); // 同じアイコンをクリックした場合は閉じる
+                              } else {
+                                setSelectedIcon(icon); // 別のアイコンをクリックした場合はそのアイコンを選択
+                              }
+                            }}
+                          >
                             <Box
-                              key={icon.id}
-                              p={2}
-                              borderWidth="1px"
-                              borderRadius="md"
-                              boxShadow="sm"
+                              width="48px"
+                              height="48px"
                               display="flex"
-                              flexDirection="column"
                               alignItems="center"
                               justifyContent="center"
-                              width="100%"
-                              height="100%"
                               overflow="hidden"
-                              cursor="pointer"
-                              onClick={() => setSelectedIcon(icon)}
                             >
-                              <Box
-                                width="48px"
-                                height="48px"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                overflow="hidden"
-                              >
-                                <img
-                                  src={icon.image_url}
-                                  alt={icon.name}
-                                  style={{
-                                    objectFit: "contain",
-                                    width: "100%",
-                                    height: "100%",
-                                  }}
-                                />
-                              </Box>
-                              <Text
-                                textAlign="center"
-                                whiteSpace="nowrap"
-                                overflow="hidden"
-                                textOverflow="ellipsis"
-                                maxWidth="100%"
-                                mt={2}
-                              >
-                                {icon.name}
-                              </Text>
+                              <img
+                                src={icon.image_url}
+                                alt={icon.name}
+                                style={{
+                                  objectFit: "contain",
+                                  width: "100%",
+                                  height: "100%",
+                                }}
+                              />
                             </Box>
-                          ))}
+                            <Text
+                              textAlign="center"
+                              whiteSpace="nowrap"
+                              overflow="hidden"
+                              textOverflow="ellipsis"
+                              maxWidth="100%"
+                              mt={2}
+                            >
+                              {icon.name}
+                            </Text>
+                          </Box>
+                        ))}      
                       </Box>
                     </Box>
                   ))}
@@ -367,7 +373,7 @@ const DashboardPage = () => {
           flexDirection="column"
         >
           {/* 閉じるボタン */}
-          <Flex justify="flex-end" mb={4}>
+          <Flex justify="flex-start" mb={4}>
             <Button
               variant="solid"
               size="sm"
@@ -380,7 +386,7 @@ const DashboardPage = () => {
               p={0}
               minWidth="32px"
             >
-              <CloseIcon boxSize="0.7em" />
+              <ChevronLeftIcon boxSize="1.5em" />
             </Button>
           </Flex>
           {/* アイコン詳細 */}
