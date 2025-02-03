@@ -1,6 +1,6 @@
 from alembic import op
 from sqlalchemy.orm import Session
-from app.models import Project
+from backend.app.models import Project
 
 revision = '91e16f007348'
 down_revision = 'c822077cbad5'

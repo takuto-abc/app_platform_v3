@@ -5,9 +5,10 @@ from pathlib import Path
 import sys
 import os
 from dotenv import load_dotenv
+from backend.app.models import Base
 
 # プロジェクトルートを `sys.path` に追加
-sys.path.append(str(Path(__file__).resolve().parents[1]))
+sys.path.append(str(Path(__file__).resolve().parent.parent / "backend"))
 
 # .env ファイルを読み込む
 env_path = Path(__file__).resolve().parents[1] / '.env'
@@ -17,9 +18,6 @@ load_dotenv(dotenv_path=env_path)
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set. Please check your .env file.")
-
-# モデルのメタデータをインポート
-from app.models import Base  # backendディレクトリ内のapp.modelsをインポート
 
 # Alembic Config オブジェクトを取得
 config = context.config

@@ -16,10 +16,11 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    working_dir: /app/backend   # ← 追加：作業ディレクトリを /app/backend に設定
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./:/app 
     env_file:
       - backend/.env
     depends_on:

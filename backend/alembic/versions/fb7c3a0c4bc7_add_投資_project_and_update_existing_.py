@@ -7,7 +7,7 @@ Create Date: 2024-12-13 12:15:21.333710
 """
 from alembic import op
 from sqlalchemy.orm import Session
-from app.models import Project
+from backend.app.models import Project
 
 # revision identifiers, used by Alembic.
 revision = 'fb7c3a0c4bc7'
