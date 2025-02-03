@@ -1,16 +1,12 @@
-# backend/Dockerfile
-FROM python:3.10-slim
+FROM python:3.10-bullseye
 
 WORKDIR /app
 
-# backend ディレクトリ内の requirements.txt をコピー
+RUN apt-get update && apt-get install -y libpq-dev gcc && rm -rf /var/lib/apt/lists/*
+
 COPY backend/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# パッケージのインストール
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
-
-# backend ディレクトリ内の全ソースコードをコピー
 COPY backend/ ./
 
 EXPOSE 8000
