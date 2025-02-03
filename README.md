@@ -2,6 +2,8 @@
 
 source .venv/bin/activate
 
+docker-compose up --build
+
 最新版でインストール
 pip install --upgrade -r requirements.txt
 
